@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create User Account</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --card: #ffffff;
+      --border: #e4e4e7;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --error: #dc2626;
+      --success-bg: #ecfdf3;
+      --success-text: #166534;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      background: var(--bg);
+      padding: 2rem;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.75rem 1.5rem 2rem;
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.07);
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+    }
+    p.lead {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease;
+      background: #fff;
+    }
+    input:focus, select:focus {
+      border-color: rgba(79, 70, 229, 0.45);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    .field {
+      margin-bottom: 0.85rem;
+    }
+    .error-text {
+      font-size: 0.7rem;
+      color: var(--error);
+      margin-top: 0.3rem;
+    }
+    .error-input {
+      border-color: rgba(220, 38, 38, 0.5);
+      background: rgba(254, 242, 242, 0.5);
+    }
+    .row {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .row .field {
+      flex: 1;
+    }
+    .btn {
+      width: 100%;
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.55rem;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.1s ease;
+      margin-top: 0.15rem;
+    }
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .alert {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.55rem;
+      font-size: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .alert-success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid rgba(22, 101, 52, 0.2);
+    }
+    .alert-error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create User Account</h1>
+    <p class="lead">As an admin, fill this form to add a new user.</p>
+
+    <div id="status" style="display: none;"></div>
+
+    <form id="createUserForm" novalidate>
+      <div class="field">
+        <label for="name">Full name</label>
+        <input id="name" name="name" type="text" placeholder="Jane Doe" />
+        <div class="error-text" data-error-for="name"></div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" placeholder="jane@example.com" />
+        <div class="error-text" data-error-for="email"></div>
+      </div>
+
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role" name="role">
+          <option value="user">User</option>
+          <option value="admin">Administrator</option>
+          <option value="manager">Manager</option>
+        </select>
+        <div class="error-text" data-error-for="role"></div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" />
+          <div class="error-text" data-error-for="password"></div>
+        </div>
+        <div class="field">
+          <label for="confirmPassword">Confirm</label>
+          <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Repeat password" />
+          <div class="error-text" data-error-for="confirmPassword"></div>
+        </div>
+      </div>
+
+      <button class="btn" type="submit" id="submitBtn">Create user</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("createUserForm");
+    const statusBox = document.getElementById("status");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function showStatus(message, type = "success") {
+      statusBox.style.display = "block";
+      statusBox.textContent = message;
+      statusBox.className = "alert " + (type === "success" ? "alert-success" : "alert-error");
+    }
+
+    function clearStatus() {
+      statusBox.style.display = "none";
+      statusBox.textContent = "";
+      statusBox.className = "";
+    }
+
+    function setFieldError(fieldName, message) {
+      const errBox = document.querySelector('[data-error-for="' + fieldName + '"]');
+      const input = document.getElementById(fieldName);
+      if (errBox) errBox.textContent = message || "";
+      if (input) {
+        if (message) {
+          input.classList.add("error-input");
+        } else {
+          input.classList.remove("error-input");
+        }
+      }
+    }
+
+    function validate(values) {
+      let valid = true;
+      // clear old errors
+      ["name", "email", "role", "password", "confirmPassword"].forEach((f) =>
+        setFieldError(f, "")
+      );
+
+      if (!values.name.trim()) {
+        setFieldError("name", "Name is required.");
+        valid = false;
+      }
+
+      if (!values.email.trim()) {
+        setFieldError("email", "Email is required.");
+        valid = false;
+      } else {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(values.email)) {
+          setFieldError("email", "Enter a valid email.");
+          valid = false;
+        }
+      }
+
+      if (!values.password) {
+        setFieldError("password", "Password is required.");
+        valid = false;
+      } else if (values.password.length < 6) {
+        setFieldError("password", "Password must be at least 6 characters.");
+        valid = false;
+      }
+
+      if (values.confirmPassword !== values.password) {
+        setFieldError("confirmPassword", "Passwords do not match.");
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      clearStatus();
+
+      const values = {
+        name: form.name.value,
+        email: form.email.value,
+        role: form.role.value,
+        password: form.password.value,
+        confirmPassword: form.confirmPassword.value,
+      };
+
+      const ok = validate(values);
+      if (!ok) return;
+
+      // simulate loading
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+
+      // fake "request"
+      setTimeout(() => {
+        // if successful
+        showStatus("User account created successfully.", "success");
+
+        // reset form
+        form.reset();
+        ["name", "email", "role", "password", "confirmPassword"].forEach((f) =>
+          setFieldError(f, "")
+        );
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create user";
+
+        // if error, do this instead:
+        // showStatus("Something went wrong.", "error");
+      }, 500);
+    });
+  </script>
+</body>
+</html>

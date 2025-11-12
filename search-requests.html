@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PIN — Search Requests</title>
+<link rel="icon" type="image/png" href="image.png?v=1">
+<link rel="shortcut icon" href="image.png?v=1">
+<style>
+  :root{
+    --bg:#f7f7fb; --card:#fff; --ink:#0f172a; --muted:#6b7280; --border:#e6e7ec;
+    --field:#f2f3f6; --field-text:#111827; --purple:#4f46e5; --danger:#ef4444; --dark:#0c0c14;
+    --content-width:1032px; --logo-size:44px; --tab-radius:18px; --tab-pad-y:12px; --tab-pad-x:16px; --tab-min-h:44px; --icon-size:16px;
+    --card-radius:22px; --field-radius:14px; --shadow:0 10px 24px rgba(2,6,23,.06), 0 2px 6px rgba(2,6,23,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .wrap{max-width:var(--content-width);margin:auto;padding:24px}
+
+  .header{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:2}
+  .header .row{max-width:calc(var(--content-width) + 88px);margin:auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{height:var(--logo-size);width:var(--logo-size);border-radius:12px;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:800}
+  .brand h1{margin:0;font-size:20px}
+  .brand small{display:block;color:#6b7280}
+
+  .btn{appearance:none;border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;color:#111;text-decoration:none;font-weight:600;}
+  .btn:hover{background:#f3f4f6}
+
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#ececef;border-radius:22px;padding:6px}
+  .tabs a{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;min-height:44px;border-radius:18px;color:#111;text-decoration:none;font-weight:600;line-height:1}
+  .tabs a svg{width:16px;height:16px}
+  .tabs a:hover{background:#e9e9f2}
+  .tabs a.current{background:var(--purple);color:#fff}
+
+  .space{height:24px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:24px}
+  .card h2{margin:0 0 4px}
+  .lead{color:#8b92a0;margin:0 0 18px}
+
+  form{display:grid;gap:18px}
+  label{font-weight:700;color:#2b2f38;margin-bottom:8px;display:block}
+  .field{display:grid;gap:8px}
+  .grid{display:grid;gap:18px}
+  @media (min-width:760px){ .two{grid-template-columns:1fr 1fr} }
+
+  input[type="text"], select, input[type="date"]{
+    width:100%;border:1px solid #e7e8ee;border-radius:14px;padding:12px 14px;background:#f2f3f6;color:#111827;outline:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  input::placeholder{color:#9aa0ab}
+  input:focus, select:focus{border-color:#d4d6f7;box-shadow:0 0 0 4px rgba(79,70,229,.12), inset 0 1px 0 rgba(255,255,255,.6);}
+
+  .searchBar{margin-top:6px}
+  .primary{background:var(--dark);color:#fff;border:0;padding:12px 16px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;width:100%;}
+  .primary svg{width:18px;height:18px;stroke-width:2.5}
+  .primary:hover{filter:brightness(1.05)}
+
+  .hint{display:none;color:var(--danger);font-size:14px}
+  .hint.show{display:block}
+  .banner{display:none;border:1px solid #fde68a;background:#fffbeb;color:#92400e;padding:12px 14px;border-radius:12px;margin-top:10px}
+
+  .resultsWrap{margin-top:18px}
+  .list{display:grid;gap:14px}
+  .item{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:grid;gap:8px;position:relative;cursor:pointer;transition:box-shadow .2s, transform .06s}
+  .item:hover{box-shadow:0 6px 18px rgba(2,6,23,.06)}
+  .item:active{transform:scale(.998)}
+  .titleRow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .title{font-weight:800}
+  .status{font-size:12px;padding:6px 10px;border-radius:999px;font-weight:800}
+  .s-inprog{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+  .s-pending{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+  .s-done{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+  .meta{display:flex;gap:14px;align-items:center;color:#6b7280;font-size:14px}
+  .meta .dot::before{content:"•";margin:0 6px;color:#cbd5e1}
+  .item .actions{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}
+  .linkbtn{font-size:13px;padding:12px 16px;border-radius:14px;border:1px solid var(--border);background:#fff;text-decoration:none;color:#111;font-weight:600}
+  .linkbtn:hover{background:#f3f4f6}
+  .empty{border:1px dashed var(--border);border-radius:14px;padding:20px;text-align:center;color:#8b92a0}
+</style>
+
+<style>
+  #logoutModal::backdrop{background:rgba(2,6,23,.45)}
+  #logoutModal{border:0;padding:0;border-radius:20px;width:min(440px,92%)}
+  #logoutModal .lg-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:20px;box-shadow:0 24px 48px rgba(2,6,23,.18);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  #logoutModal h3{margin:0 0 6px;font-size:20px}
+  #logoutModal .lg-text{margin:0 0 16px;color:#6b7280}
+  #logoutModal .lg-actions{display:flex;gap:10px;justify-content:flex-end}
+  #logoutModal .lg-btn{padding:12px 16px;border-radius:14px;border:1px solid #e5e7eb;cursor:pointer;background:#fff;font-weight:600}
+  #logoutModal .lg-btn.ghost:hover{background:#f3f4f6}
+  #logoutModal .lg-btn.danger{background:#0c0c14;color:#fff;border-color:#0c0c14}
+  #logoutModal .lg-btn.danger:hover{filter:brightness(1.05)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="row">
+    <div class="brand"><div class="logo">P</div><div><h1>Person-In-Need Portal</h1><small id="who">Logged in</small></div></div>
+    <button class="btn" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs">
+    <a href="view-requests.html"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M3 12h18M3 19h18"/></svg>View Requests</a>
+    <a href="search-requests.html" class="current"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search Requests</a>
+    <a href="create-request.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create Request</a>
+  </nav>
+
+  <div class="space"></div>
+
+  <section class="card">
+    <h2>Search Requests</h2>
+    <p class="lead">Filter your requests by title, category, status, or date range</p>
+
+    <form id="searchForm" novalidate>
+      <div class="field">
+        <label for="q">Request Title</label>
+        <input id="q" type="text" placeholder="Search by title...">
+      </div>
+
+      <div class="grid two">
+        <div class="field">
+          <label for="category">Service Category</label>
+          <select id="category">
+            <option value="">All categories</option>
+            <option>Transportation</option><option>Home Repair</option><option>Medical Appointment</option>
+            <option>Grocery Assistance</option><option>Medical Equipment</option><option>Companionship</option>
+            <option>Shopping/Errands</option><option>Meal Delivery</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="status">Request Status</label>
+          <select id="status">
+            <option value="">All statuses</option>
+            <option>Pending</option><option>In Progress</option><option>Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid two">
+        <div class="field"><label for="from">Date From</label><input id="from" type="date"></div>
+        <div class="field"><label for="to">Date To</label><input id="to" type="date"></div>
+      </div>
+
+      <div class="searchBar">
+        <button type="submit" class="primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search
+        </button>
+      </div>
+
+      <div id="criteriaHint" class="hint">Please enter at least one search filter.</div>
+      <div id="dateHint" class="hint">“Date From” must be earlier than or equal to “Date To”.</div>
+      <div id="errorBanner" class="banner">Unable to retrieve requests. Please try again later.</div>
+    </form>
+
+    <div class="resultsWrap">
+      <div id="results" class="list"></div>
+      <div id="emptyStart" class="empty">Enter one or more filters above and click <b>Search</b> to see your requests.</div>
+      <div id="emptyNoMatch" class="empty" style="display:none">No matching requests found. Modify or clear filters and try again.</div>
+    </div>
+  </section>
+</main>
+
+<dialog id="logoutModal" aria-labelledby="logoutTitle">
+  <div class="lg-card">
+    <h3 id="logoutTitle">Log out?</h3>
+    <p class="lg-text">You’ll be returned to the role selection page.</p>
+    <div class="lg-actions">
+      <button type="button" class="lg-btn ghost" id="lgCancel">Cancel</button>
+      <button type="button" class="lg-btn danger" id="lgConfirm">Log out</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  // mark current tab
+  (function(){
+    const current = (location.pathname.split('/').pop() || '');
+    document.querySelectorAll('.tabs a').forEach(a=>{
+      a.classList.toggle('current', a.getAttribute('href')===current);
+    });
+  })();
+
+  const $ = (s,r=document)=>r.querySelector(s);
+  const resultsEl = $('#results'), emptyStartEl = $('#emptyStart'), emptyNoMatchEl = $('#emptyNoMatch');
+  const form = $('#searchForm');
+  const q = $('#q'), category = $('#category'), status = $('#status'), from = $('#from'), to = $('#to');
+  const criteriaHint = $('#criteriaHint'), dateHint = $('#dateHint'), errorBanner = $('#errorBanner');
+
+  // Show logged-in name (server session)
+  (async function loadWhoAmI(){
+    try{
+      const res = await fetch('/api/whoami');
+      if(!res.ok) throw 0;
+      const me = await res.json();
+      if(me && me.name) document.getElementById('who').textContent = `Logged in as ${me.name}`;
+    }catch{}
+  })();
+
+  function statusClass(s){
+    if(/progress/i.test(s)) return 'status s-inprog';
+    if(/pending/i.test(s))  return 'status s-pending';
+    if(/complete/i.test(s)) return 'status s-done';
+    return 'status';
+  }
+  const fmtDate = d => d ? new Date(d+'T00:00').toLocaleDateString() : '—';
+
+  function clearResultsToStart(){
+    resultsEl.innerHTML='';
+    emptyNoMatchEl.style.display='none';
+    emptyStartEl.style.display='block';
+  }
+
+  function renderResults(rows){
+    resultsEl.innerHTML='';
+    rows.forEach(rec=>{
+      const item=document.createElement('article');
+      item.className='item';
+      item.innerHTML=`
+        <div class="titleRow">
+          <div class="title">${rec.title || '—'}</div>
+          <span class="${statusClass(rec.status||'Pending')}">${rec.status || 'Pending'}</span>
+        </div>
+        <div class="meta">
+          <span>#${rec.id || '—'}</span>
+          <span class="dot"></span><span>${rec.category || '—'}</span>
+          <span class="dot"></span><span>${fmtDate(rec.date)}</span>
+          ${rec.assignedTo?`<span class="dot"></span><span>Assigned to <b>${rec.assignedTo}</b></span>`:''}
+        </div>
+        <div class="actions">
+          <a class="linkbtn" href="request-detail.html?id=${encodeURIComponent(rec.id)}" onclick="event.stopPropagation()">View</a>
+          ${(rec.owner && rec.owner_is_me)?`<a class="linkbtn" href="update-request.html?id=${encodeURIComponent(rec.id)}" onclick="event.stopPropagation()">Edit</a>`:''}
+        </div>`;
+      const go=()=>location.href=`request-detail.html?id=${encodeURIComponent(rec.id)}`;
+      item.addEventListener('click', go);
+      item.addEventListener('keypress', (e)=>{ if(e.key==='Enter'||e.key===' ') go(); });
+      resultsEl.appendChild(item);
+    });
+    if(rows.length===0){ emptyStartEl.style.display='none'; emptyNoMatchEl.style.display='block'; }
+    else { emptyStartEl.style.display='none'; emptyNoMatchEl.style.display='none'; }
+  }
+
+  function hasAnyCriteria(){ return [q.value.trim(), category.value, status.value, from.value, to.value].some(Boolean); }
+  function validDateRange(){ return !(from.value && to.value) || (new Date(from.value) <= new Date(to.value)); }
+
+  async function searchServer(){
+    const payload = {};
+    if(q.value.trim())      payload.keyword  = q.value.trim();
+    if(category.value)      payload.category = category.value;
+    if(status.value)        payload.status   = status.value;
+
+    const res = await fetch('/api/requests/search', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if(!data.success || !Array.isArray(data.requests)) throw new Error('Bad response');
+
+    // Server returns only this user's rows if your backend enforces owner==session user.
+    // If not, you can filter client-side here by owner name pulled from /api/whoami.
+
+    let rows = data.requests;
+
+    // optional client-side date filtering
+    if(from.value){
+      const f = new Date(from.value);
+      rows = rows.filter(r => r.date && new Date(r.date) >= f);
+    }
+    if(to.value){
+      const t = new Date(to.value);
+      rows = rows.filter(r => r.date && new Date(r.date) <= t);
+    }
+    return rows;
+  }
+
+  clearResultsToStart();
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    criteriaHint.classList.remove('show'); dateHint.classList.remove('show'); errorBanner.style.display='none';
+
+    if(!hasAnyCriteria()){ criteriaHint.classList.add('show'); clearResultsToStart(); return; }
+    if(!validDateRange()){ dateHint.classList.add('show'); clearResultsToStart(); return; }
+
+    try{
+      const rows = await searchServer();
+      renderResults(rows);
+    }catch(err){
+      console.error(err);
+      errorBanner.style.display='block';
+      clearResultsToStart();
+    }
+  });
+
+  // Logout via server (no LocalStorage)
+  async function performLogout(redirect='index.html'){
+    try{ await fetch('/logout', { method:'POST', headers:{'Accept':'application/json'} }); }catch(e){}
+    location.href = redirect;
+  }
+  (function setupLogout(){
+    const trigger = document.getElementById('logoutBtn');
+    const dlg = document.getElementById('logoutModal');
+    const cancel = document.getElementById('lgCancel');
+    const confirm = document.getElementById('lgConfirm');
+    if(!trigger || !dlg) return;
+
+    trigger.addEventListener('click', (e)=>{ e.preventDefault(); dlg.showModal(); });
+    cancel.addEventListener('click', ()=> dlg.close());
+    confirm.addEventListener('click', ()=> performLogout('index.html'));
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+    dlg.addEventListener('close', ()=> trigger.focus());
+  })();
+</script>
+</body>
+</html>

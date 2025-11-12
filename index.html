@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Responsify - CSR</title>
+<link rel="icon" type="image/png" href="/static/image.png">
+<link rel="shortcut icon" href="/static/image.png">
+<style>
+  :root{
+    --ink:#0f172a; --muted:#64748b; --border:#e5e7eb; --paper:#ffffff;
+    --brand:#4f46e5; --accent:#0c0c14; --bg:#0b1220;
+    --radius:18px; --shadow:0 12px 28px rgba(2,6,23,.12), 0 2px 8px rgba(2,6,23,.08);
+    --error:#ef4444; --ok:#16a34a;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; color:var(--ink); background:var(--bg);
+       font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+
+  .shell{min-height:100%; display:grid; grid-template-columns: 1.1fr 1fr}
+  @media (max-width:950px){ .shell{grid-template-columns:1fr} }
+
+  .photo{position:relative; overflow:hidden; background:#0c1222}
+  .photo::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(1200px 700px at 10% 10%, rgba(79,70,229,.35), transparent 60%),
+      radial-gradient(900px 600px at 90% 90%, rgba(14,165,233,.25), transparent 55%);
+    pointer-events:none;
+  }
+  .photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+             filter:brightness(.82) contrast(1.04) saturate(1.05)}
+  .caption{position:relative; z-index:1; color:#fff; padding:40px; display:flex; gap:14px; align-items:center}
+  .logo{width:52px; height:52px; border-radius:14px; display:grid; place-items:center; font-weight:900;
+        background:linear-gradient(135deg, #4f46e5, #22d3ee); color:#fff; box-shadow:0 8px 22px rgba(79,70,229,.42)}
+  .caption h1{margin:0 0 4px; font-size:22px}
+  .caption small{color:#cbd5e1}
+
+  .panel{display:grid; place-items:center; padding:36px 24px; background:
+         radial-gradient(850px 420px at 110% -10%, rgba(79,70,229,.08), transparent 60%),
+         radial-gradient(700px 420px at -10% 110%, rgba(14,165,233,.08), transparent 60%), #f7f8fc}
+  .card{width:min(520px, 92vw); background:var(--paper); border:1px solid var(--border);
+        border-radius:20px; box-shadow:var(--shadow); padding:26px 24px}
+  .hdr{display:flex; justify-content:space-between; align-items:center}
+  .hdr h2{margin:0; font-size:22px}
+  .hdr a{color:var(--muted); text-decoration:none; font-weight:600}
+  .hdr a:hover{color:#334155}
+  .lead{margin:8px 0 16px; color:var(--muted)}
+  .continue{display:none;}
+
+  form{display:grid; gap:12px}
+  .field{display:grid; gap:6px}
+  label{font-weight:800; color:#1f2937}
+  select, input[type="text"], input[type="password"]{
+    width:100%; border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; background:#f8fafc; color:#0f172a; outline:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6)
+  }
+  select:focus, input:focus{
+    border-color:#c7d2fe; box-shadow:0 0 0 4px rgba(79,70,229,.14), inset 0 1px 0 rgba(255,255,255,.6)
+  }
+  .row{display:flex; gap:10px}
+  .row .field{flex:1}
+  @media (max-width:680px){ .row{flex-direction:column} }
+
+  .pw-input{ position:relative; }
+  .pw-input input{ padding-right:92px; }
+  .toggle{
+    position:absolute;
+    right:8px;
+    top:50%;
+    transform:translateY(-50%);
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:0 12px;
+    height:40px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    font-weight:700;
+    line-height:1;
+  }
+
+  .actions{display:grid; gap:10px; margin-top:4px}
+  .remember{display:flex; align-items:center; gap:8px; color:#475569; font-size:14px}
+  .primary{background:var(--brand); color:#fff; border:0; padding:14px 16px; border-radius:14px; font-weight:900; cursor:pointer}
+  .primary:hover{filter:brightness(1.05)}
+  .hint{display:none; color:var(--ok); font-weight:700; text-align:center}
+  .hint.show{display:block}
+  .error{display:none; color:var(--error); font-weight:700}
+  .error.show{display:block}
+
+  .meta{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; color:#475569; font-size:13px}
+  .pill{background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; font-weight:700}
+  .foot{margin-top:14px; text-align:center; color:#6b7280; font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="photo" aria-hidden="true">
+    <img src="https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?q=80&w=2400&auto=format&fit=crop" alt="">
+  </aside>
+
+  <main class="panel">
+    <div style="text-align:center; margin-bottom:0px;">
+      <img src="/static/image.png"
+           alt="Responsify logo"
+           style="width:210px; height:210px; object-fit:contain; display:inline-block; margin-bottom:6px;">
+    </div>
+    <section class="card" aria-labelledby="loginTitle">
+      <div class="hdr"><h2 id="loginTitle">Sign in</h2></div>
+      <p class="lead">Select your role and enter your username & password.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="role">Role</label>
+          <select id="role" required>
+            <option value="">— Choose your role —</option>
+            <option value="admin">Administrator</option>
+            <option value="csr">CSR Representative</option>
+            <option value="pin">Person-In-Need (PIN)</option>
+            <option value="platform">Platform Management</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" type="text" autocomplete="username" placeholder="e.g., sjohnson" required>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="pw-input">
+              <input id="password" type="password" autocomplete="current-password" required>
+              <button type="button" id="togglePw" class="toggle" aria-label="Show password">Show</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <label class="remember"><input id="remember" type="checkbox"> Remember me on this device</label>
+          <button class="primary" type="submit">Continue</button>
+          <div id="err" class="error" role="alert">Invalid credentials. Please check your role, username, and password.</div>
+          <div id="ok" class="hint">Signing you in…</div>
+        </div>
+
+        <div class="foot">
+          <a href="signup.html">Create a new account</a> ·
+          <a href="forgot-password.html">Forgot password?</a>
+        </div>
+      </form>
+      <div class="foot">Forgot your password? Contact your administrator.</div>
+    </section>
+  </main>
+</div>
+
+<script>
+const DEMO_MODE = false;
+
+// Demo users per role (username -> password)
+
+function getDashboard(role){
+  switch(role){
+    case 'admin': return '/user-admin-dashboard';
+    case 'csr'  : return '/csr/dashboard';
+    case 'pin'  : return '/view-requests';
+    case 'platform' : return '/platform-dashboard';
+    default     : return '/';
+  }
+}
+
+
+const $ = (s,r=document)=>r.querySelector(s);
+const err = $('#err'), ok = $('#ok');
+
+// Toggle password visibility
+(function(){
+  const btn = $('#togglePw'), pw = $('#password');
+  btn.addEventListener('click', ()=>{
+    const show = pw.getAttribute('type') === 'password';
+    pw.setAttribute('type', show ? 'text' : 'password');
+    btn.textContent = show ? 'Hide' : 'Show';
+  });
+})();
+
+function demoValidate(role, username, password){
+  const table = DEMO_USERS[role] || {};
+  return !!table[username] && table[username] === password;
+}
+
+// Login form submit
+$('#loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  err.classList.remove('show'); ok.classList.remove('show');
+  const role = $('#role').value.trim();
+  const username = $('#username').value.trim();
+  const password = $('#password').value;
+
+  if(!role || !username || !password){
+    err.textContent = 'Please fill in role, username, and password.';
+    err.classList.add('show');
+    return;
+  }
+
+  if (DEMO_MODE) {
+    const valid = demoValidate(role, username, password);
+    if(!valid){
+      err.textContent = 'Invalid credentials. Please check your role, username, and password.';
+      err.classList.add('show');
+      return;
+    }
+    ok.classList.add('show');
+    setTimeout(()=> location.href = getDashboard(role), 600);
+  } else {
+    try{
+      const res = await fetch('/api/login', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ role, username, password })
+      });
+      const data = await res.json();
+      if(data.status !== 'ok') throw new Error(data.message);
+
+      // inside the success branch, just before location.href = data.redirect
+      if (data.status === 'ok') {
+        // Persist minimal info for the dashboard guard
+        localStorage.setItem('role', document.querySelector('#role').value);
+        localStorage.setItem('username', document.querySelector('#username').value);
+        // (Optionally set admin_name too if you want it shown in the header)
+        if (document.querySelector('#role').value === 'admin') {
+          localStorage.setItem('admin_name', document.querySelector('#username').value);
+        }
+        setTimeout(()=> location.href = data.redirect, 600);
+      }
+
+
+      ok.classList.add('show');
+      setTimeout(()=> location.href = data.redirect, 600);
+    } catch(errMsg){
+      err.textContent = 'Invalid credentials or server error.';
+      err.classList.add('show');
+    }
+  }
+});
+</script>
+<script>
+  if (window.location.pathname === "/") {
+    localStorage.clear();
+    sessionStorage.clear();
+  }
+</script>
+</body>
+</html>

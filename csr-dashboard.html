@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CSR Representative Portal — Dashboard</title>
+<link rel="icon" type="image/png" href="image.png?v=1">
+<link rel="shortcut icon" href="image.png?v=1">
+<link rel="preconnect" href="https://api.dicebear.com" crossorigin>
+<style>
+  :root{
+    --bg:#f7f8fb; --card:#fff; --ink:#0f172a; --muted:#6b7280; --border:#e6e7ec;
+    --pill:#f3f4f6; --purple:#4f46e5; --dark:#0c0c14; --ok:#16a34a; --warn:#f59e0b; --info:#2563eb;
+    --radius:18px; --shadow:0 10px 24px rgba(2,6,23,.06), 0 2px 6px rgba(2,6,23,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .wrap{max-width:1120px;margin:auto;padding:24px}
+
+  /* Header */
+  .header{position:sticky;top:0;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:3}
+  .header .row{max-width:1220px;margin:auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{height:44px;width:44px;border-radius:12px;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:800}
+  .brand h1{margin:0;font-size:22px}
+  .brand small{display:block;color:var(--muted)}
+  .btn{appearance:none;border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;color:#111;text-decoration:none}
+  .btn:hover{background:#f3f4f6}
+
+  /* Decorative CSR banner */
+  .csr-banner{
+    position:relative; margin:0 auto 18px; max-width:1120px; border-radius:24px; overflow:hidden;
+    border:1px solid var(--border); box-shadow:var(--shadow); background:#111;
+  }
+  .csr-banner::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(1200px 400px at 20% -10%, rgba(79,70,229,.45), transparent 60%),
+      radial-gradient(1200px 400px at 120% 110%, rgba(16,185,129,.35), transparent 60%),
+      linear-gradient(0deg, rgba(15,23,42,.55), rgba(15,23,42,.55));
+    z-index:1;
+  }
+  .csr-banner .bg{
+    position:absolute; inset:0; background-size:cover; background-position:center;
+    filter:blur(12px) saturate(1.15) brightness(.9); transform:scale(1.1); opacity:.35;
+  }
+  .csr-banner .content{
+    position:relative; z-index:2; color:#fff; padding:18px; display:flex; align-items:center; gap:14px;
+  }
+  .csr-photo{
+    width:68px;height:68px;border-radius:50%;border:2px solid rgba(255,255,255,.85);background:#fff;overflow:hidden;flex:0 0 auto;
+  }
+  .csr-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .csr-titles h2{margin:0;font-size:20px}
+  .csr-titles p{margin:4px 0 0;opacity:.95}
+
+  /* Tabs */
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#ececef;border-radius:26px;padding:6px;max-width:960px;margin:16px auto}
+  .tabs button{border:0;background:transparent;padding:14px 18px;border-radius:20px;font-weight:800;cursor:pointer}
+  .tabs button.active{background:#4f46e5;color:#fff}
+
+  /* Attention Banner */
+  .banner{display:flex;align-items:center;gap:10px;border:1px solid #fed7aa;background:#fff7ed;color:#9a3412;padding:12px 14px;border-radius:14px;margin:0 auto 14px;max-width:980px}
+
+  /* Cards/sections */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:22px}
+  .section{margin:16px 0}
+  .section h3{margin:0 0 4px}
+  .muted{color:#6b7280}
+
+  /* Filters (pills) */
+  .filters{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ficon{width:22px;height:22px;color:#6b7280}
+  .pillselect{
+    appearance:none;-webkit-appearance:none;
+    border:1px solid #eef0f4;background:#f5f6f9;
+    padding:10px 14px;border-radius:14px;font-weight:700;color:#111;cursor:pointer;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%2399a1ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+    background-repeat:no-repeat;background-position:right 10px center;padding-right:36px;
+  }
+
+  /* Request list */
+  .list{display:grid;gap:12px}
+  .row{
+    background:#fff;border:1px solid #e8e9ef;border-radius:16px;padding:16px 14px;
+    display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+  }
+  .row:hover{box-shadow:0 8px 18px rgba(2,6,23,.06)}
+  .title{font-weight:900}
+  .chips{display:flex;gap:6px;align-items:center;margin-top:6px}
+  .chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid transparent}
+  .chip.pending{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}
+  .chip.completed{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
+  .chip.inprog{background:#e0f2fe;border-color:#bae6fd;color:#075985}
+  .meta{display:flex;gap:12px;align-items:center;color:#6b7280;font-size:14px;margin-top:6px;flex-wrap:wrap}
+  .meta .dot::before{content:"•";margin:0 6px;color:#e5e7eb}
+  .desc{color:#475569;margin-top:8px}
+
+  .actions{display:flex;gap:8px;align-items:center}
+  .assign{background:#0c0c14;color:#fff;border:0;padding:8px 12px;border-radius:10px;font-weight:800;cursor:pointer}
+  .assign[disabled]{opacity:.65;cursor:not-allowed}
+  .chev{border:1px solid var(--border);background:#fff;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}
+
+  /* Stats */
+  .stats{display:grid;gap:14px;grid-template-columns:repeat(5,1fr)}
+  @media (max-width:1000px){ .stats{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:680px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:#fafcff;border:1px solid var(--border);border-radius:16px;padding:16px}
+  .stat .k{color:#6b7280;font-weight:700}
+  .stat .v{font-size:28px;font-weight:900;margin-top:6px}
+  .stat .v.green{color:#16a34a}
+  .stat .v.orange{color:#ea580c}
+
+  /* Status badge (modal) */
+  .status{font-size:12px;padding:6px 10px;border-radius:999px;font-weight:800;border:1px solid}
+  .s-inprog{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
+  .s-pending{background:#fffbeb;color:#92400e;border-color:#fde68a}
+  .s-completed{background:#ecfdf5;color:#065f46;border-color:#bbf7d0}
+
+  .avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #e5e7eb;vertical-align:middle;margin-right:6px}
+
+  /* Logout modal */
+  #logoutModal::backdrop{background:rgba(2,6,23,.45)}
+  #logoutModal{border:0;padding:0;border-radius:20px;width:min(440px,92%)}
+  #logoutModal .lg-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:20px;box-shadow:0 24px 48px rgba(2,6,23,.18);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  #logoutModal h3{margin:0 0 6px;font-size:20px}
+  #logoutModal .lg-text{margin:0 0 16px;color:#6b7280}
+  #logoutModal .lg-actions{display:flex;gap:10px;justify-content:flex-end}
+  #logoutModal .lg-btn{padding:10px 14px;border-radius:12px;border:1px solid #e5e7eb;cursor:pointer;background:#fff}
+  #logoutModal .lg-btn.ghost:hover{background:#f3f4f6}
+  #logoutModal .lg-btn.danger{background:#0c0c14;color:#fff;border-color:#0c0c14;font-weight:700}
+  #logoutModal .lg-btn.danger:hover{filter:brightness(1.05)}
+
+  /* Shortlist button */
+  .shortBtn{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:50%;
+    width:36px;height:36px;
+    display:grid;place-items:center;
+    cursor:pointer;
+    font-size:18px;
+    line-height:1;
+  }
+  .shortBtn.saved{color:#f59e0b;}
+  .shortBtn:hover{background:#f3f4f6;}
+
+  .short-filters{
+    display:grid;
+    gap:12px;
+    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    align-items:flex-start;
+  }
+  .short-filters input,
+  .short-filters select{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:14px;
+    background:#fff;
+  }
+  .short-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .short-error{
+    display:none;
+    grid-column:1 / -1;
+    background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:14px;padding:8px 10px;font-size:14px;
+  }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="row">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div>
+        <h1>CSR Representative Portal</h1>
+        <small id="who">Logged in</small>
+      </div>
+    </div>
+    <button class="btn" type="button" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<section class="csr-banner" aria-label="CSR overview">
+  <div id="csrBg" class="bg" style="background-image:url('');"></div>
+  <div class="content">
+    <div class="csr-photo"><img id="csrAvatar" src="" alt="CSR photo"></div>
+    <div class="csr-titles">
+      <h2 id="csrGreeting">Welcome, CSR Representative</h2>
+      <p>Review new requests, assign yourself, and keep the queue flowing.</p>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="tabs" role="tablist" aria-label="Primary navigation">
+    <button id="tabDash" class="active" role="tab" aria-selected="true" aria-controls="panelDash">📋&nbsp;Dashboard</button>
+    <button id="tabMine" role="tab" aria-selected="false" aria-controls="panelMine">🗂️&nbsp;My Assignments</button>
+    <button id="tabShort" role="tab" aria-selected="false" aria-controls="panelShort">⭐ My Shortlist</button>
+    <button id="tabSearch" role="tab" aria-selected="false" aria-controls="panelSearch">🔍 Search Requests</button>
+  </div>
+
+  <div class="banner" id="attentionBanner" style="display:none">
+    <span>⚠️</span>
+    <span><b id="newCount">0</b> new requests need your attention</span>
+  </div>
+
+  <!-- DASHBOARD PANEL -->
+  <section id="panelDash" class="section" role="tabpanel" aria-labelledby="tabDash">
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="k">Total Requests</div><div class="v" id="statTotal">0</div></div>
+        <div class="stat"><div class="k">Pending</div><div class="v orange" id="statPending">0</div></div>
+        <div class="stat"><div class="k">In Progress</div><div class="v" id="statProgress">0</div></div>
+        <div class="stat"><div class="k">Unassigned</div><div class="v orange" id="statUnassigned">0</div></div>
+        <div class="stat"><div class="k">My Assignments</div><div class="v green" id="statMine">0</div></div>
+        <div class="stat" id="statShortWrap"><div class="k">My Shortlist</div><div class="v orange" id="statShort">0</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="card" style="border-color:#e5e7eb">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">All Requests</h3>
+            <div class="muted">View and manage assistance requests from Persons-In-Need</div>
+          </div>
+          <div class="filters">
+            <svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 3H2l8 9v7l4 2v-9l8-9z"/></svg>
+            <select id="fStatus" class="pillselect" aria-label="Status filter">
+              <option value="all" selected>All Status</option>
+              <option value="pending">Pending</option>
+              <option value="inprog">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select id="fScope" class="pillselect" aria-label="Scope filter">
+              <option value="all" selected>All Requests</option>
+              <option value="unassigned">Unassigned</option>
+              <option value="mine">My Assignments</option>
+            </select>
+          </div>
+        </div>
+        <div id="allList" class="list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MY ASSIGNMENTS PANEL -->
+  <section id="panelMine" class="section" role="tabpanel" aria-labelledby="tabMine" hidden>
+    <div class="card">
+      <h3 style="margin:0 0 6px">My Assignments</h3>
+      <div id="mineList" class="list"></div>
+    </div>
+  </section>
+
+  <!-- MY SHORTLIST PANEL -->
+  <section id="panelShort" class="section" role="tabpanel" aria-labelledby="tabShort" hidden>
+    <div class="card">
+      <h3 style="margin:0 0 6px">My Shortlist</h3>
+      <p class="muted" style="margin:0 0 14px">Search shortlisted requests by keyword, category, or date.</p>
+
+      <div class="short-filters">
+        <input id="shortKeyword" type="text" placeholder="Keyword in title/description…" />
+        <select id="shortCategory">
+          <option value="">All categories</option>
+          <option>Transportation</option>
+          <option>Home Repair</option>
+          <option>Shopping/Errands</option>
+        </select>
+        <input id="shortFrom" type="date" />
+        <input id="shortTo" type="date" />
+        <div class="short-actions">
+          <button type="button" id="shortDoSearch" class="assign">Search Request</button>
+          <button type="button" id="shortClear" class="btn">Clear</button>
+        </div>
+        <div id="shortError" class="short-error">No shortlisted request matched your search. Please check your input.</div>
+      </div>
+
+      <div id="shortList" class="list"></div>
+    </div>
+  </section>
+
+  <!-- SEARCH REQUESTS PANEL -->
+  <section id="panelSearch" class="section" role="tabpanel" aria-labelledby="tabSearch" hidden>
+    <div class="card">
+      <h3 style="margin:0 0 6px">Search Requests</h3>
+      <p class="muted" style="margin:0 0 18px">Find requests by title, category, status, or date range</p>
+
+      <div style="display:grid;gap:16px;margin-bottom:18px">
+        <input id="searchKeyword" type="text" placeholder="Search by title or description..."
+               style="padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:15px">
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+          <select id="searchCategory" class="pillselect">
+            <option value="">All Categories</option>
+            <option>Transportation</option>
+            <option>Home Repair</option>
+            <option>Shopping/Errands</option>
+          </select>
+          <select id="searchStatus" class="pillselect">
+            <option value="">All Statuses</option>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+          <input id="searchFrom" type="date" style="padding:10px 14px;border:1px solid var(--border);border-radius:12px">
+          <input id="searchTo" type="date" style="padding:10px 14px;border:1px solid var(--border);border-radius:12px">
+        </div>
+
+        <button id="searchBtn" class="assign" style="width:100%;font-size:16px;padding:12px 0">Search</button>
+      </div>
+
+      <div id="searchResults" class="list"></div>
+      <div id="searchEmpty" class="muted" style="text-align:center;margin-top:12px">Enter filters above and click <b>Search</b> to view results.</div>
+    </div>
+  </section>
+</main>
+
+<!-- Logout Modal (single) -->
+<dialog id="logoutModal" aria-labelledby="logoutTitle">
+  <div class="lg-card">
+    <h3 id="logoutTitle">Log out?</h3>
+    <p class="lg-text">You’ll be returned to Sign In page.</p>
+    <div class="lg-actions">
+      <button type="button" class="lg-btn ghost" id="lgCancel">Cancel</button>
+      <button type="button" class="lg-btn danger" id="lgConfirm">Log out</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- CSR Detail Modal -->
+<dialog id="csrDetail" aria-labelledby="csrDtlTitle">
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:18px;max-width:720px;width:min(720px,92vw)">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-bottom:12px">
+      <div>
+        <h3 id="csrDtlTitle" style="margin:0;font-size:20px"></h3>
+        <div id="csrDtlSub" class="muted" style="font-size:14px"></div>
+      </div>
+      <button class="btn" type="button" id="csrDtlClose">Close</button>
+    </div>
+    <div id="csrDtlBody"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" type="button" id="csrDtlUnassign" style="display:none">Unassign</button>
+      <button class="btn" type="button" id="csrDtlAssign" style="display:none">Assign to me</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  /* ------------ Dynamic session ------------ */
+  let CURRENT_USER = { role: '', name: '' };
+
+  async function loadSession() {
+    const res = await fetch('/api/whoami', { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) { window.location.href = '/'; return; }
+    const j = await res.json();
+    CURRENT_USER = { role: j.role || '', name: j.name || '' };
+  }
+
+  /* Avatar decoration */
+  function initialsAvatarUrl(name){
+    const n = encodeURIComponent(name || 'CSR Rep');
+    return `https://api.dicebear.com/8.x/initials/svg?seed=${n}&backgroundType=gradientLinear&radius=50`;
+  }
+  function decorateCSR(){
+    const nm = CURRENT_USER.name || 'CSR Representative';
+    document.getElementById('who').textContent = `Logged in as ${nm}`;
+    document.getElementById('csrGreeting').textContent = `Welcome, ${nm}`;
+    const localHero = 'assets/csr-hero.jpg';
+    const localHead = 'assets/csr-headshot.jpg';
+    const fallback  = initialsAvatarUrl(nm);
+    const headImg = new Image();
+    headImg.onload = () => { document.getElementById('csrAvatar').src = localHead; };
+    headImg.onerror = () => { document.getElementById('csrAvatar').src = fallback; };
+    headImg.src = localHead;
+    const heroImg = new Image();
+    heroImg.onload = () => { document.getElementById('csrBg').style.backgroundImage = `url('${localHero}')`; };
+    heroImg.onerror = () => { document.getElementById('csrBg').style.backgroundImage = `url('${fallback}')`; };
+    heroImg.src = localHero;
+  }
+
+  const API_ROOT = (location.pathname.startsWith('/max/')) ? '/max' : '';
+  const API_COMPLETE = (id) => `${API_ROOT}/api/csr/requests/${encodeURIComponent(id)}/complete`;
+
+
+  /* -------- Data layer -------- */
+  const API_LIST        = `${API_ROOT}/api/csr/requests`;
+  const API_DETAIL      = (id)=>`${API_ROOT}/api/csr/requests/${encodeURIComponent(id)}`;
+  const API_SEARCH      = `${API_ROOT}/api/csr/requests/search`;
+  const API_SHORT       = `${API_ROOT}/api/csr/shortlist`;
+  const API_SHORT_SAVE  = (id)=>`${API_ROOT}/api/csr/shortlist/save/${encodeURIComponent(id)}`;
+  const API_ASSIGN      = (id)=>`${API_ROOT}/api/csr/requests/${encodeURIComponent(id)}/assign`;
+
+  function mapApiToUi(r){
+    return {
+      id: r.id, title: r.title, category: r.category, date: r.date,
+      created: r.created || r.date, status: r.status || 'Pending',
+      owner: r.owner || r.owner_name, description: r.description || '',
+      location: r.location || r.address || '—',
+      viewCount: r.viewCount, shortlistCount: r.shortlistCount,
+      assignedTo: r.assignedTo || null, assignedAt: r.assignedAt || null
+    };
+  }
+
+  async function fetchJson(url, opts){
+    const res = await fetch(url, opts);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+  async function fetchRequests(){
+    const data = await fetchJson(API_LIST, { headers:{'Accept':'application/json'} });
+    const rows = Array.isArray(data) ? data : (data.requests || []);
+    return rows.map(mapApiToUi);
+  }
+  // Bump view count first, then load the CSR detail
+  let LAST_INC = { id:null, at:0 }; // simple guard (2s window)
+
+  async function fetchDetail(id){
+  const now = Date.now();
+  if (LAST_INC.id !== String(id) || now - LAST_INC.at > 2000) {
+    await fetch(`/api/requests/${encodeURIComponent(id)}/views`, { method:'POST' }).catch(()=>{});
+    LAST_INC = { id:String(id), at:now };
+  }
+  const data = await fetchJson(API_DETAIL(id), { headers:{'Accept':'application/json'} });
+  const rec = data.request || data;
+  return mapApiToUi(rec);
+}
+
+
+  async function searchRequests(payload){
+    const body = JSON.stringify(payload || {});
+    const data = await fetchJson(API_SEARCH, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body
+    });
+    const rows = data.requests || [];
+    return rows.map(mapApiToUi);
+  }
+  async function fetchShortlist(){
+    const data = await fetchJson(API_SHORT, { headers:{'Accept':'application/json'} });
+    const rows = data.requests || [];
+    return rows.map(mapApiToUi);
+  }
+
+
+  /* Helpers */
+  const $=(s,r=document)=>r.querySelector(s);
+  const fmtDate=d=>new Date(d+'T00:00').toLocaleDateString();
+  function timeAgo(iso){
+    const s = (Date.now() - new Date(iso).getTime())/1000;
+    const d = Math.floor(s/86400); if(d>0) return d===1?'1 day ago':`${d} days ago`;
+    const h = Math.floor(s/3600);  if(h>0) return h===1?'1 hour ago':`${h} hours ago`;
+    const m = Math.floor(s/60);    if(m>0) return m===1?'1 min ago':`${m} mins ago`;
+    return 'just now';
+  }
+  function getDisplayStatus(rec){
+  if ((rec.status || '').toLowerCase() === 'completed') return 'Completed';
+  return rec.assignedTo ? 'In Progress' : 'Pending';
+  }
+
+  function statusChip(status){
+    if(status==='Completed') return `<span class="chip completed">Completed</span>`;
+    if(status==='In Progress') return `<span class="chip inprog">In&nbsp;Progress</span>`;
+    return `<span class="chip pending">Pending</span>`;
+  }
+
+  /* Assignment calls */
+  async function serverAssign(id){
+    const res = await fetch(API_ASSIGN(id), { method:'POST', headers:{'Accept':'application/json'} });
+    const j = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(j.message || `HTTP ${res.status}`);
+    return j;
+  }
+  async function serverUnassign(id){
+    const res = await fetch(API_ASSIGN(id), { method:'DELETE', headers:{'Accept':'application/json'} });
+    const j = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(j.message || `HTTP ${res.status}`);
+    return j;
+  }
+
+  /* Row rendering */
+  function makeRow(rec){
+    const displayStatus = getDisplayStatus(rec);
+    const mine = rec.assignedTo && rec.assignedTo === CURRENT_USER.name;
+    const ownedByOther = rec.assignedTo && !mine;
+    const completed = displayStatus==='Completed';
+
+    const row = document.createElement('article');
+    row.className='row'+(mine?' inprog':'');
+    const assignLabel = completed
+      ? 'Completed'
+      : (mine ? 'Assigned' : (ownedByOther ? `Assigned to ${rec.assignedTo}` : 'Assign to me'));
+
+    const disableAssign = completed || ownedByOther;
+
+    row.innerHTML=`
+      <div>
+        <div class="title">${rec.title}</div>
+        <div class="chips">${statusChip(displayStatus)}</div>
+        <div class="meta">
+          <span>#${rec.id}</span><span class="dot"></span>
+          <span>${rec.category||'—'}</span><span class="dot"></span>
+          <span>${fmtDate(rec.date||new Date().toISOString().slice(0,10))}</span><span class="dot"></span>
+          <span>📍 ${rec.location||'—'}</span><span class="dot"></span>
+          <span>⏱ ${timeAgo(rec.created||rec.date||Date.now())}</span>
+        </div>
+        <div class="desc">${rec.description||''}</div>
+      </div>
+      <div class="actions">
+        <button class="assign" data-id="${rec.id}" ${disableAssign ? 'disabled' : ''}>${assignLabel}</button>
+        ${mine && !completed ? `<button class="btn" data-unassign="${rec.id}">Unassign</button>` : ''}
+        ${mine && !completed ? `
+          <button class="btn" data-complete="${rec.id}"
+            style="background:#ecfdf5;border:1px solid #bbf7d0;color:#065f46;font-weight:700;">
+            Complete
+          </button>
+        ` : ''}
+        <button class="shortBtn" type="button" data-short="${rec.id}" title="Save to shortlist" aria-label="Save to shortlist">★</button>
+        <button class="chev" type="button" data-view="${rec.id}" title="View details" aria-label="View details">›</button>
+      </div>
+    `;
+    return row;
+  }
+
+  function attachRowHandlers(listEl, rowsRef){
+    // Assign
+    listEl.querySelectorAll('.assign').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.getAttribute('data-id');
+        btn.disabled = true; const old = btn.textContent; btn.textContent = '...';
+        try{
+          await serverAssign(id);
+          const rec = rowsRef.find(r=>String(r.id)===String(id));
+          if(rec){ rec.assignedTo = CURRENT_USER.name; rec.assignedAt = new Date().toISOString(); }
+          renderAll(true);
+        }catch(e){
+          alert(e.message || 'Failed to assign');
+          btn.disabled = false; btn.textContent = old;
+        }
+      });
+    });
+    // Unassign
+    listEl.querySelectorAll('[data-unassign]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.getAttribute('data-unassign');
+        btn.disabled = true;
+        try{
+          await serverUnassign(id);
+          const rec = rowsRef.find(r=>String(r.id)===String(id)) || {};
+          rec.assignedTo = null; rec.assignedAt = null;
+          renderAll(true);
+        }catch(e){
+          alert(e.message || 'Failed to unassign');
+          btn.disabled = false;
+        }
+      });
+    });
+    // Shortlist save
+    listEl.querySelectorAll('[data-short]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.getAttribute('data-short');
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '…';
+        try{
+          const res = await fetch(API_SHORT_SAVE(id), { method:'POST', headers:{ 'Accept':'application/json' } });
+          const j = await res.json().catch(()=>({}));
+          const already = (j.message || '').toLowerCase().includes('already shortlisted');
+          if (!res.ok && !already) throw new Error(j.message || `HTTP ${res.status}`);
+          btn.classList.add('saved'); btn.innerHTML = '★'; btn.disabled = false;
+          await loadShortlist().catch(()=>{});
+          const shortStat = document.getElementById('statShort');
+          if (shortStat) shortStat.textContent = SHORTLIST_CACHE.length;
+        }catch(err){
+          alert('Failed to save to shortlist: ' + (err?.message || 'Unknown error'));
+          btn.disabled = false; btn.innerHTML = original;
+        }
+      });
+    });
+    // Complete
+
+    listEl.querySelectorAll('[data-complete]').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const id = btn.getAttribute('data-complete');
+    if (!confirm('Mark this request as completed?')) return;
+    btn.disabled = true; const old = btn.textContent; btn.textContent = '...';
+    try{
+      const res = await fetch(API_COMPLETE(id), { method:'POST', headers:{ 'Accept':'application/json' } });
+      const j = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(j.message || `HTTP ${res.status}`);
+      // update MASTER copy if present
+      const m = MASTER.find(r=>String(r.id)===String(id));
+      if (m){
+        m.status = 'Completed';
+        m.assignedTo = m.assignedTo || (CURRENT_USER.name || 'CSR');
+        m.assignedAt = m.assignedAt || new Date().toISOString();
+      }
+      await renderAll(true);
+    }catch(err){
+      alert(err.message || 'Failed to complete');
+      btn.disabled = false; btn.textContent = old;
+    }
+  });
+});
+
+    // Details
+    listEl.querySelectorAll('[data-view]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.getAttribute('data-view');
+        const rec = await fetchDetail(id).catch(()=>null);
+        if(rec) openCSRDetail(rec);
+      });
+    });
+  }
+
+  /* ---------- Renderers ---------- */
+  let MASTER = [];
+  async function renderAll(skipFetch=false){
+    const list=$('#allList'); list.innerHTML='<div class="muted">Loading…</div>';
+
+    if(!skipFetch || !MASTER.length){
+      MASTER = await fetchRequests().catch(()=>[]);
+    }
+
+    const s = $('#fStatus').value;
+    const scope = $('#fScope').value;
+    let rows = MASTER.slice();
+
+    if(scope==='unassigned'){
+      rows = rows.filter(r => !r.assignedTo && r.status!=='Completed');
+    }else if(scope==='mine'){
+      rows = rows.filter(r => r.assignedTo === CURRENT_USER.name);
+    }
+
+    if(s!=='all'){
+      rows = rows.filter(r=>{
+        const ds = getDisplayStatus(r);
+        if(s==='pending')   return ds==='Pending';
+        if(s==='inprog')    return ds==='In Progress';
+        if(s==='completed') return ds==='Completed';
+        return true;
+      });
+    }
+
+    list.innerHTML='';
+    rows.forEach(r => list.appendChild(makeRow(r)));
+    attachRowHandlers(list, MASTER);
+
+    const unassigned = MASTER.filter(r=>r.status!=='Completed' && !r.assignedTo);
+    const mine       = MASTER.filter(r=>r.assignedTo === CURRENT_USER.name);
+    $('#statTotal').textContent      = MASTER.length;
+    $('#statPending').textContent    = MASTER.filter(r=>getDisplayStatus(r)==='Pending').length;
+    $('#statProgress').textContent   = MASTER.filter(r=>getDisplayStatus(r)==='In Progress').length;
+    $('#statUnassigned').textContent = unassigned.length;
+    $('#statMine').textContent       = mine.length;
+    $('#statShort').textContent      = SHORTLIST_CACHE.length;
+    $('#newCount').textContent = unassigned.length;
+    $('#attentionBanner').style.display = unassigned.length? 'flex':'none';
+  }
+
+  function renderMine(){
+    const mineList = $('#mineList');
+    mineList.innerHTML = '';
+    MASTER.filter(r => r.assignedTo === CURRENT_USER.name).forEach(r=>{
+      mineList.appendChild(makeRow(r));
+    });
+    attachRowHandlers(mineList, MASTER);
+  }
+
+  /* --- Shortlist (server-provided list, with client filters) --- */
+  let SHORTLIST_CACHE = [];
+  async function loadShortlist(){
+    SHORTLIST_CACHE = await fetchShortlist().catch(()=>[]);
+  }
+
+  function renderShortlist(){
+    const listEl   = document.getElementById('shortList');
+    const errEl    = document.getElementById('shortError');
+
+    const kw   = (document.getElementById('shortKeyword')?.value || '').toLowerCase();
+    const cat  = document.getElementById('shortCategory')?.value || '';
+    const from = document.getElementById('shortFrom')?.value || '';
+    const to   = document.getElementById('shortTo')?.value || '';
+
+    listEl.innerHTML = '';
+    errEl.style.display = 'none';
+
+    let rows = SHORTLIST_CACHE.slice();
+
+    if (kw) {
+      rows = rows.filter(r =>
+        (r.title || '').toLowerCase().includes(kw) ||
+        (r.description || '').toLowerCase().includes(kw) ||
+        String(r.id || '').toLowerCase().includes(kw)
+      );
+    }
+    if (cat) rows = rows.filter(r => r.category === cat);
+    if (from) rows = rows.filter(r => new Date(r.date) >= new Date(from));
+    if (to)   rows = rows.filter(r => new Date(r.date) <= new Date(to));
+
+    if (!rows.length) {
+      errEl.style.display = 'block';
+      listEl.innerHTML = '<div class="muted">No results to display.</div>';
+      return;
+    }
+
+    rows.forEach(r => listEl.appendChild(makeRow(r)));
+    attachRowHandlers(listEl, rows);
+  }
+
+  /* --- Search (server-side) --- */
+  function renderSearch(){
+    const container = document.getElementById('searchResults');
+    const empty = document.getElementById('searchEmpty');
+    container.innerHTML = '';
+    empty.style.display = 'block';
+  }
+
+  async function performSearch(){
+    const key = document.getElementById('searchKeyword').value.trim();
+    const cat = document.getElementById('searchCategory').value.trim();
+    const status = document.getElementById('searchStatus').value.trim();
+    const payload = {};
+    if (key)    payload.keyword = key;
+    if (cat)    payload.category = cat;
+    if (status) payload.status = status;
+
+    const results = await searchRequests(payload).catch(()=>[]);
+    const container = document.getElementById('searchResults');
+    const empty = document.getElementById('searchEmpty');
+    container.innerHTML = '';
+    if(!results.length){
+      empty.textContent = 'No matching requests found.';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    results.forEach(r=>container.appendChild(makeRow(r)));
+    attachRowHandlers(container, results);
+  }
+
+  document.getElementById('searchBtn').addEventListener('click', performSearch);
+
+  /* Filters events */
+  document.getElementById('fStatus')?.addEventListener('change', ()=>renderAll(true));
+  document.getElementById('fScope')?.addEventListener('change', ()=>renderAll(true));
+
+  /* Tabs */
+  const tabDash=$('#tabDash'), tabMine=$('#tabMine'), tabShort=$('#tabShort'), tabSearch=$('#tabSearch');
+  const panelDash=$('#panelDash'), panelMine=$('#panelMine'), panelShort=$('#panelShort'), panelSearch=$('#panelSearch');
+
+  function switchTab(which){
+    [tabDash, tabMine, tabShort, tabSearch].forEach(btn => btn?.classList.remove('active'));
+    [panelDash, panelMine, panelShort, panelSearch].forEach(p => p && (p.hidden = true));
+
+    if(which === 'dash'){
+      tabDash?.classList.add('active'); panelDash.hidden = false; renderAll(true);
+    } else if(which === 'mine'){
+      tabMine?.classList.add('active'); panelMine.hidden = false; renderMine();
+    } else if(which === 'short'){
+      tabShort?.classList.add('active'); panelShort.hidden = false; renderShortlist();
+    } else if(which === 'search'){
+      tabSearch?.classList.add('active'); panelSearch.hidden = false; renderSearch();
+    }
+  }
+
+  document.getElementById('shortDoSearch')?.addEventListener('click', renderShortlist);
+  document.getElementById('shortClear')?.addEventListener('click', () => {
+    document.getElementById('shortKeyword').value = '';
+    document.getElementById('shortCategory').value = '';
+    document.getElementById('shortFrom').value = '';
+    document.getElementById('shortTo').value = '';
+    renderShortlist();
+  });
+
+  tabDash.addEventListener('click',()=>switchTab('dash'));
+  tabMine.addEventListener('click',()=>switchTab('mine'));
+  tabShort?.addEventListener('click', ()=>switchTab('short'));
+  tabSearch.addEventListener('click', ()=>switchTab('search'));
+
+  /* Initial load */
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    await loadSession();
+    decorateCSR();
+    await loadShortlist().catch(()=>{});
+    renderAll();
+  });
+
+  /* Logout wiring */
+  function performLogout(){
+    fetch('/api/logout', { method:'POST', headers:{'Accept':'application/json'} })
+      .finally(()=>{ window.location.href = '/'; });
+  }
+  (function setupLogoutModal(){
+    const btn = document.getElementById('logoutBtn');
+    const dlg = document.getElementById('logoutModal');
+    const cancel = document.getElementById('lgCancel');
+    const confirm = document.getElementById('lgConfirm');
+    if(!btn || !dlg) return;
+    btn.addEventListener('click', () => dlg.showModal());
+    cancel.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('close', () => btn.focus());
+    confirm.addEventListener('click', performLogout);
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                     e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+  })();
+
+  /* CSR Detail modal */
+  function avatarFor(name='Guest'){
+    const safe = encodeURIComponent(name || 'Guest');
+    return `https://api.dicebear.com/8.x/thumbs/svg?seed=${safe}`;
+  }
+  (function setupCsrDetail(){
+    const dlg = document.getElementById('csrDetail');
+    document.getElementById('csrDtlClose')?.addEventListener('click', ()=> dlg.close());
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                     e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+
+    window.openCSRDetail = async function(rec){
+      const fresh = await fetchDetail(rec.id).catch(()=>rec);
+      rec = fresh || rec;
+
+      const isCompleted =
+      (rec.status || '').toLowerCase() === 'completed' ||
+      (Array.isArray(window.COMPLETED) && window.COMPLETED.includes(rec.id));
+
+      const mine = rec.assignedTo && rec.assignedTo === CURRENT_USER.name;
+      const ds = isCompleted ? 'Completed' : (rec.assignedTo ? 'In Progress' : 'Pending');
+      const sClass = ds === 'Completed' ? 's-completed' : (ds === 'In Progress' ? 's-inprog' : 's-pending');
+
+      document.getElementById('csrDtlTitle').textContent = rec.title;
+      document.getElementById('csrDtlSub').textContent =
+        `#${rec.id} • ${rec.category || '—'} • ${new Date((rec.date||'')+'T00:00').toLocaleDateString()}`;
+
+      const html = `
+        <div style="display:grid;gap:12px">
+          <div><span class="muted">Status</span>
+            <span class="status ${sClass}" style="margin-left:8px;display:inline-block">${ds}</span>
+          </div>
+
+          <div><span class="muted">Requestor</span>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+              <img src="${avatarFor(rec.owner)}" alt="" class="avatar" loading="lazy">
+              <b>${rec.owner||'—'}</b>
+            </div>
+          </div>
+
+          <div><span class="muted">Location</span><div>📍 ${rec.location||'—'}</div></div>
+          <div><span class="muted">Created</span><div>${new Date(rec.created||Date.now()).toLocaleString()}</div></div>
+
+          <div><span class="muted">Description</span>
+            <div style="margin-top:4px;color:#475569">${rec.description||'—'}</div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+            <div class="muted">Views: <b>${Number.isFinite(rec.viewCount)?rec.viewCount:'—'}</b></div>
+            <div class="muted">Shortlisted: <b>${Number.isFinite(rec.shortlistCount)?rec.shortlistCount:'—'}</b></div>
+          </div>
+
+          ${rec.assignedTo ? `<div class="muted">Assigned to: <b>${rec.assignedTo}</b></div>` : ''}
+        </div>
+      `;
+      document.getElementById('csrDtlBody').innerHTML = html;
+
+      const btnAssign = document.getElementById('csrDtlAssign');
+      const btnUnassign = document.getElementById('csrDtlUnassign');
+
+      btnAssign.style.display = (!isCompleted && !rec.assignedTo) ? 'inline-block' : 'none';
+      btnUnassign.style.display = mine ? 'inline-block' : 'none';
+
+      btnAssign.onclick = async ()=>{
+        btnAssign.disabled = true;
+        try{
+          await serverAssign(rec.id);
+          const m = MASTER.find(r=>String(r.id)===String(rec.id));
+          if(m){ m.assignedTo = CURRENT_USER.name; m.assignedAt = new Date().toISOString(); }
+          dlg.close();
+          renderAll(true);
+        }catch(e){
+          alert(e.message || 'Failed to assign');
+          btnAssign.disabled = false;
+        }
+      };
+      btnUnassign.onclick = async ()=>{
+        btnUnassign.disabled = true;
+        try{
+          await serverUnassign(rec.id);
+          const m = MASTER.find(r=>String(r.id)===String(rec.id));
+          if(m){ m.assignedTo = null; m.assignedAt = null; }
+          dlg.close();
+          renderAll(true);
+        }catch(e){
+          alert(e.message || 'Failed to unassign');
+          btnUnassign.disabled = false;
+        }
+      };
+
+      dlg.showModal();
+    }
+  })();
+</script>
+
+</body>
+</html>

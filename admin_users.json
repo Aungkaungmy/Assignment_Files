@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "uid": "U-001",
+    "fullName": "System Admin",
+    "email": "admin@example.com",
+    "username": "admin",
+    "password_hash": "scrypt:32768:8:1$W5q34SO7K4RRajB4$655d7c54c6cddda594ffced357c2018c6ce2f5b400b075fc106d85aed76c67cf33b2f9375429e66b7a65cc9d198b7b7821a1c4bd0717d670c8be83a370770701",
+    "role": "admin",
+    "status": "Active",
+    "createdAt": "2025-11-11T16:09:30Z"
+  },
+  {
+    "id": 2,
+    "uid": "U-002",
+    "fullName": "CSR Default",
+    "email": "csr@example.com",
+    "username": "CSRMAO1",
+    "password_hash": "scrypt:32768:8:1$TKgDXkTe6yK8NhwE$23dbe8c002c0351fc8857d430a146c128a59d2269300a0d05c792b667f686cbb56c353724dce5f14ec0dc7dbb375d1bb0202835b0d1c2256dd4f578ab1db5f20",
+    "role": "csr",
+    "status": "Active",
+    "createdAt": "2025-11-11T16:09:31Z"
+  }
+]

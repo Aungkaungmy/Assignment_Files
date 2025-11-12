@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PIN — Edit Request</title>
+<link rel="icon" type="image/png" href="image.png?v=1">
+<link rel="shortcut icon" href="image.png?v=1">
+<style>
+  :root{
+    --bg:#f7f7fb; --card:#fff; --ink:#0f172a; --muted:#64748b; --border:#e6e7ec;
+    --field:#f2f3f6; --field-text:#111827; --purple:#4f46e5; --dark:#0c0c14;
+    --content-width:1032px; --logo-size:44px; --tab-radius:18px;
+    --tab-pad-y:12px; --tab-pad-x:16px; --tab-min-h:44px; --icon-size:16px;
+    --card-radius:22px; --field-radius:14px;
+    --shadow:0 10px 24px rgba(2,6,23,.06),0 2px 6px rgba(2,6,23,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .wrap{max-width:var(--content-width);margin:auto;padding:24px}
+
+  /* Header */
+  .header{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:2}
+  .header .row{max-width:calc(var(--content-width) + 88px);margin:auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{height:var(--logo-size);width:var(--logo-size);border-radius:12px;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:800}
+  .brand h1{margin:0;font-size:20px}
+  .brand small{display:block;color:var(--muted)}
+  .btn{appearance:none;border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;color:#111;text-decoration:none;font-weight:600}
+  .btn:hover{background:#f3f4f6}
+
+  /* Tabs */
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#ececef;border-radius:22px;padding:6px}
+  .tabs a{display:flex;align-items:center;justify-content:center;gap:8px;padding:var(--tab-pad-y) var(--tab-pad-x);min-height:var(--tab-min-h);border-radius:var(--tab-radius);color:#111;text-decoration:none;font-weight:600;line-height:1}
+  .tabs a svg{width:var(--icon-size);height:var(--icon-size)}
+  .tabs a:hover{background:#e9e9f2}
+  .tabs a.current{background:var(--purple);color:#fff}
+  .space{height:24px}
+
+  /* Card + form */
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--card-radius);box-shadow:var(--shadow);padding:24px}
+  .muted{color:#6b7280}
+  form{display:grid;gap:18px}
+  .grid{display:grid;gap:18px}
+  @media(min-width:760px){ .two{grid-template-columns:1fr 1fr} }
+  label{font-weight:700;color:#2b2f38;margin-bottom:8px;display:block}
+  input[type="text"],select,textarea,input[type="date"],input[type="time"]{
+    width:100%;border:1px solid #e7e8ee;border-radius:var(--field-radius);padding:12px 14px;background:var(--field);color:var(--field-text);outline:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)
+  }
+  textarea{min-height:120px;resize:vertical}
+  input:focus,select:focus,textarea:focus{border-color:#d4d6f7;box-shadow:0 0 0 4px rgba(79,70,229,.12), inset 0 1px 0 rgba(255,255,255,.6)}
+
+  .primary{background:var(--purple);color:#fff;border:0;padding:12px 16px;border-radius:14px;font-weight:800}
+  .secondary{border:1px solid var(--border);background:#fff;color:#111;padding:12px 16px;border-radius:14px;text-decoration:none;display:inline-block}
+  .banner{display:none;margin-top:8px;border:1px solid #bbf7d0;background:#ecfdf5;color:#14532d;padding:10px 12px;border-radius:12px}
+
+  /* Logout Modal (PIN unified) */
+  #logoutModal::backdrop{ background:rgba(2,6,23,.45) }
+  #logoutModal{ border:0; padding:0; border-radius:20px; width:min(440px,92%) }
+  #logoutModal .lg-card{ background:#fff; border:1px solid #e5e7eb; border-radius:20px; padding:20px; box-shadow:0 24px 48px rgba(2,6,23,.18) }
+  #logoutModal h3{ margin:0 0 6px; font-size:20px }
+  #logoutModal .lg-text{ margin:0 0 16px; color:#6b7280 }
+  #logoutModal .lg-actions{ display:flex; gap:10px; justify-content:flex-end }
+  #logoutModal .lg-btn{ padding:12px 16px; border-radius:14px; border:1px solid #e5e7eb; cursor:pointer; background:#fff; font-weight:600 }
+  #logoutModal .lg-btn.ghost:hover{ background:#f3f4f6 }
+  #logoutModal .lg-btn.danger{ background:#0c0c14; color:#fff; border-color:#0c0c14 }
+  #logoutModal .lg-btn.danger:hover{ filter:brightness(1.05) }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="row">
+    <div class="brand">
+      <div class="logo">P</div>
+      <div>
+        <h1>Person-In-Need Portal</h1>
+        <small id="who">Logged in</small>
+      </div>
+    </div>
+    <button class="btn" type="button" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Tabs -->
+  <nav class="tabs">
+    <a id="tabView"   href="view-requests.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M3 12h18M3 19h18"/></svg>View Requests</a>
+    <a id="tabSearch" href="search-requests.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search Requests</a>
+    <a id="tabEdit"   class="current" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>Edit Request</a>
+  </nav>
+
+  <div class="space"></div>
+
+  <section class="card">
+    <h2 style="margin:0 0 4px">Edit Request</h2>
+    <p class="muted" style="margin:0 0 12px">Update your request details. Changes are saved to the server.</p>
+
+    <form id="editForm" novalidate>
+      <div>
+        <label for="title">Service Title</label>
+        <input id="title" type="text" required>
+      </div>
+
+      <div>
+        <label for="category">Service Category</label>
+        <select id="category" required>
+          <option>Transportation</option><option>Home Repair</option><option>Medical Appointment</option>
+          <option>Grocery Assistance</option><option>Medical Equipment</option><option>Companionship</option>
+          <option>Shopping/Errands</option><option>Meal Delivery</option><option>Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="description">Description</label>
+        <textarea id="description" required></textarea>
+      </div>
+
+      <div>
+        <label for="location">Location</label>
+        <input id="location" type="text" required>
+      </div>
+
+      <div class="grid two">
+        <div>
+          <label for="date">Preferred Date</label>
+          <input id="date" type="date" required>
+        </div>
+        <div>
+          <label for="time">Preferred Time</label>
+          <input id="time" type="time" required>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="secondary" id="cancelLink" href="view-requests.html">Cancel</a>
+        <button class="primary" type="submit">Save Changes</button>
+      </div>
+
+      <div id="saveMsg" class="banner">Saved!</div>
+    </form>
+  </section>
+</main>
+
+<!-- Logout Modal -->
+<dialog id="logoutModal" aria-labelledby="logoutTitle">
+  <div class="lg-card">
+    <h3 id="logoutTitle">Log out?</h3>
+    <p class="lg-text">You’ll be returned to the role selection page.</p>
+    <div class="lg-actions">
+      <button type="button" class="lg-btn ghost" id="lgCancel">Cancel</button>
+      <button type="button" class="lg-btn danger" id="lgConfirm">Log out</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+
+  const API_UPDATE = (id) => `/api/pin/requests/${encodeURIComponent(id)}`;
+
+  // header text (no localStorage usage)
+  document.getElementById('who').textContent = 'Logged in';
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id') || '';
+  if(!id){ location.href='view-requests.html'; }
+
+  // make Edit tab & Cancel link point correctly
+  document.getElementById('tabEdit').href = `update-request.html?id=${encodeURIComponent(id)}`;
+  document.getElementById('cancelLink').href = `request-detail.html?id=${encodeURIComponent(id)}`;
+
+  // form els
+  const els = {
+    title:document.getElementById('title'),
+    category:document.getElementById('category'),
+    description:document.getElementById('description'),
+    location:document.getElementById('location'),
+    date:document.getElementById('date'),
+    time:document.getElementById('time')
+  };
+
+  // load record from server
+  async function loadRequest(){
+    try{
+      const res = await fetch(`/api/requests/${encodeURIComponent(id)}`, { headers:{'Accept':'application/json'} });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      if(!data.success || !data.request) throw new Error('Bad response');
+
+      const r = data.request;
+      els.title.value       = r.title || '';
+      els.category.value    = r.category || 'Other';
+      els.description.value = r.description || '';
+      els.location.value    = r.location || '';
+      els.date.value        = r.date || '';
+      els.time.value        = r.time || '';
+
+    }catch(err){
+      console.error(err);
+      // if we can’t load it, bounce back to list
+      location.href = 'view-requests.html';
+    }
+  }
+  loadRequest();
+
+  // save to server
+  document.getElementById('editForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    const payload = {
+      title: els.title.value.trim(),
+      category: els.category.value,
+      description: els.description.value.trim(),
+      location: els.location.value.trim(),
+      date: els.date.value,
+      time: els.time.value
+    };
+
+    try{
+      const res = await fetch(`/api/requests/${encodeURIComponent(id)}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      if(!data.success) throw new Error('Update failed');
+
+      document.getElementById('saveMsg').style.display='block';
+      setTimeout(()=>{ location.href = `request-detail.html?id=${encodeURIComponent(id)}`; }, 700);
+
+    }catch(err){
+      console.error(err);
+      alert('Could not save changes. Please try again.');
+    }
+  });
+
+  // logout via server
+  async function performLogout(redirect='index.html'){
+    try{ await fetch('/logout', { method:'POST', headers:{'Accept':'application/json'} }); }catch(e){}
+    location.href = redirect;
+  }
+  (function setupLogout(){
+    const trigger = document.getElementById('logoutBtn');
+    const dlg = document.getElementById('logoutModal');
+    const cancel = document.getElementById('lgCancel');
+    const confirm = document.getElementById('lgConfirm');
+    if(!trigger || !dlg) return;
+
+    trigger.addEventListener('click', (e)=>{ e.preventDefault(); dlg.showModal(); });
+    cancel.addEventListener('click', ()=> dlg.close());
+    confirm.addEventListener('click', ()=> performLogout('index.html'));
+
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+    dlg.addEventListener('close', ()=> trigger.focus());
+  })();
+</script>
+</body>
+</html>

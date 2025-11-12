@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Platform Management Dashboard</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --card:#fff; --ink:#0f172a; --muted:#6b7280; --border:#e5e7eb;
+    --purple:#4f46e5; --shadow:0 10px 24px rgba(2,6,23,.04),0 2px 6px rgba(2,6,23,.08);
+    --ok:#16a34a; --err:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+  .wrap{max-width:1120px;margin:auto;padding:22px}
+
+  /* Header */
+  header{position:sticky;top:0;background:rgba(255,255,255,.88);backdrop-filter:blur(7px);border-bottom:1px solid var(--border);z-index:10}
+  header .row{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:13px 22px}
+  .brand{display:flex;gap:10px;align-items:center}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:700}
+  .brand h1{margin:0;font-size:18px}
+  .brand small{color:var(--muted);display:block;font-size:12px}
+  .btn{border:1px solid var(--border);background:#fff;border-radius:12px;padding:8px 12px;cursor:pointer}
+  .btn:hover{background:#f3f4f6}
+
+  /* Stat cards */
+  .stats{display:grid;grid-template-columns:repeat(1,1fr);gap:14px;margin-top:16px}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
+  .stat small{color:var(--muted);font-size:12px}
+  .stat .value{font-size:30px;font-weight:800;margin-top:6px}
+  .stat .hint{color:var(--muted);font-size:12px;margin-top:4px}
+
+  /* Categories card */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);margin-top:18px;padding:18px}
+  .muted{color:var(--muted)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .search{flex:1;min-width:180px;border:1px solid var(--border);border-radius:12px;padding:8px 12px}
+  .cat-list{display:grid;gap:10px}
+  .cat-row{
+    background:#fff;border:1px solid #edf0f4;border-radius:14px;
+    padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center;
+  }
+  .cat-title{font-weight:700}
+  .cat-meta{color:var(--muted);font-size:12px;margin-top:3px}
+
+  /* modal */
+  dialog::backdrop{background:rgba(15,23,42,.35)}
+  dialog{border:0;border-radius:18px;padding:0;width:min(460px,92vw)}
+  .modal-body{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px}
+  .modal-body h3{margin:0 0 6px}
+  .field{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+  .field input,.field textarea,.field select{
+    border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:#fff
+  }
+  .field textarea{min-height:80px;resize:vertical}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+  .primary{background:var(--purple);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer}
+  .ghost{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px 14px;cursor:pointer}
+  .msg{font-size:14px;margin-top:10px;display:none}
+  .msg.ok{color:var(--ok)}
+  .msg.err{color:var(--err)}
+
+  /* Logout modal */
+  #logoutModal::backdrop{ background:rgba(2,6,23,.45) }
+  #logoutModal{ border:0; padding:0; border-radius:20px; width:min(440px,92%) }
+  #logoutModal .lg-card{
+    background:#fff; border:1px solid #e5e7eb; border-radius:20px; padding:20px;
+    box-shadow:0 24px 48px rgba(2,6,23,.18); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  }
+  #logoutModal h3{ margin:0 0 6px; font-size:20px }
+  #logoutModal .lg-text{ margin:0 0 16px; color:#6b7280 }
+  #logoutModal .lg-actions{ display:flex; gap:10px; justify-content:flex-end }
+  #logoutModal .lg-btn{
+    padding:10px 14px; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; background:#fff
+  }
+  #logoutModal .lg-btn.ghost:hover{ background:#f3f4f6 }
+  #logoutModal .lg-btn.danger{
+    background:#0c0c14; color:#fff; border-color:#0c0c14; font-weight:700
+  }
+  #logoutModal .lg-btn.danger:hover{ filter:brightness(1.05) }
+
+  @media (max-width:820px){
+    .stats{grid-template-columns:1fr}
+    .cat-row{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div class="brand">
+      <div class="logo">PM</div>
+      <div>
+        <h1>Platform Management</h1>
+        <small id="who">Platform manager</small>
+      </div>
+    </div>
+    <button class="btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <small>Total service categories</small>
+      <div class="value" id="statTotal">0</div>
+      <div class="hint">All categories you’ve created</div>
+    </div>
+  </div>
+
+  <!-- CATEGORY MANAGEMENT -->
+  <section class="card" aria-label="Service categories">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <h2 style="margin:0">Service Categories</h2>
+        <p class="muted" style="margin:4px 0 0">Create and classify different volunteer services.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="openReport" class="btn" type="button">Generate Report</button>
+        <button id="openCreate" class="btn" type="button">Create Category</button>
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top:14px">
+      <input id="searchCat" class="search" type="text" placeholder="Search category name or description…">
+    </div>
+
+    <div id="catList" class="cat-list" style="margin-top:10px"></div>
+  </section>
+</main>
+
+<!-- CREATE CATEGORY MODAL -->
+<dialog id="createModal" aria-labelledby="createTitle">
+  <div class="modal-body">
+    <h3 id="createTitle">Create Service Category</h3>
+    <p class="muted" style="margin:0 0 6px">As Platform Management, define a new service type for volunteers.</p>
+
+    <div class="field">
+      <label for="catName">Category name</label>
+      <input id="catName" type="text" placeholder="e.g. Transportation">
+    </div>
+    <div class="field">
+      <label for="catDesc">Description</label>
+      <textarea id="catDesc" placeholder="Short description of what this service covers…"></textarea>
+    </div>
+
+    <div id="catMsg" class="msg"></div>
+
+    <div class="actions">
+      <button type="button" class="ghost" id="catCancel">Cancel</button>
+      <button type="button" class="primary" id="catSubmit">Create</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- UPDATE CATEGORY MODAL -->
+<dialog id="updateModal" aria-labelledby="updateTitle">
+  <div class="modal-body">
+    <h3 id="updateTitle">Update Service Category</h3>
+    <p class="muted" style="margin:0 0 6px">Modify the selected category and save your changes.</p>
+
+    <input id="ucId" type="hidden">
+
+    <div class="field">
+      <label for="ucName">Category name</label>
+      <input id="ucName" type="text" placeholder="e.g. Transportation">
+    </div>
+    <div class="field">
+      <label for="ucDesc">Description</label>
+      <textarea id="ucDesc" placeholder="Short description of what this service covers…"></textarea>
+    </div>
+
+    <div id="ucMsg" class="msg"></div>
+
+    <div class="actions">
+      <button type="button" class="ghost" id="ucCancel">Cancel</button>
+      <button type="button" class="primary" id="ucSave">Update</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- DELETE CATEGORY MODAL -->
+<dialog id="deleteCatModal" aria-labelledby="deleteCatTitle">
+  <div class="modal-body">
+    <h3 id="deleteCatTitle">Delete Category?</h3>
+    <p class="muted" id="deleteCatText" style="margin:0 0 8px">Are you sure?</p>
+
+    <input type="hidden" id="dcId">
+    <div id="dcMsg" class="msg"></div>
+
+    <div class="actions">
+      <button type="button" class="ghost" id="dcCancel">Cancel</button>
+      <button type="button" class="primary" id="dcConfirm" style="background:#ef4444;border:0">Delete</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- REPORT MODAL (Daily + Weekly + Monthly) -->
+<dialog id="reportModal" aria-labelledby="reportTitle">
+  <div class="modal-body">
+    <h3 id="reportTitle">Generate Report</h3>
+    <p class="muted" style="margin:0 0 6px">Choose date option and range, then generate.</p>
+
+    <!-- Date Option -->
+    <div class="field">
+      <label for="repOption">Date Option</label>
+      <select id="repOption">
+        <option value="daily">Daily</option>
+        <option value="weekly" selected>Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+
+    <!-- Daily: single date -->
+    <div class="field" id="grpDaily" style="display:none">
+      <label for="repDate">Date</label>
+      <input id="repDate" type="date">
+    </div>
+
+    <!-- Weekly: date range -->
+    <div class="grid two" id="grpWeekly" style="display:grid;gap:12px">
+      <div class="field">
+        <label for="repFrom">Week Start</label>
+        <input id="repFrom" type="date">
+      </div>
+      <div class="field">
+        <label for="repTo">Week End</label>
+        <input id="repTo" type="date">
+      </div>
+    </div>
+
+    <!-- Monthly: single month -->
+    <div class="field" id="grpMonthly" style="display:none">
+      <label for="repMonth">Month</label>
+      <input id="repMonth" type="month">
+    </div>
+
+    <div id="repMsg" class="msg" style="margin-top:8px"></div>
+
+    <div id="repTableWrap" style="margin-top:12px;display:none">
+      <div style="overflow:auto;border:1px solid var(--border);border-radius:12px">
+        <table id="repTable" style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead>
+            <tr style="background:#f9fafb">
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb">Metric</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb">Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top:14px">
+      <button type="button" class="ghost" id="repCancel">Close</button>
+      <button type="button" class="btn" id="repPrint">Print</button>
+      <button type="button" class="primary" id="repExport">Export CSV</button>
+      <button type="button" class="primary" id="repGenerate" style="background:#4f46e5">Generate</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Logout Modal -->
+<dialog id="logoutModal" aria-labelledby="logoutTitle">
+  <div class="lg-card">
+    <h3 id="logoutTitle">Log out?</h3>
+    <p class="lg-text">You’ll be returned to the Sign in page.</p>
+    <div class="lg-actions">
+      <button type="button" class="lg-btn ghost" id="lgCancel">Cancel</button>
+      <button type="button" class="lg-btn danger" id="lgConfirm">Log out</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+/* =========================
+   Minimal API helper
+   ========================= */
+async function api(path, { method="GET", body, headers } = {}) {
+  const opts = { method, headers: { "Accept":"application/json", ...(headers||{}) }, credentials: "include" };
+  if (body !== undefined) {
+    opts.body = typeof body === "string" ? body : JSON.stringify(body);
+    if (!opts.headers["Content-Type"]) opts.headers["Content-Type"] = "application/json";
+  }
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    const text = await res.text().catch(()=> "");
+    let msg;
+    try { msg = (JSON.parse(text).message) || res.statusText; } catch { msg = text || res.statusText; }
+    const err = new Error(msg || `HTTP ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  const ct = res.headers.get("content-type")||"";
+  return ct.includes("application/json") ? res.json() : res.text();
+}
+
+/* =========================
+   Auth / identity
+   ========================= */
+async function loadWhoAmI(){
+  try{
+    const me = await api("/api/whoami");
+    if (!me || me.role !== "platform") { window.location.href = "/"; return; }
+    document.getElementById("who").textContent = `Logged in as ${me.name || "Platform Manager"}`;
+  }catch(_){
+    window.location.href = "/";
+  }
+}
+
+/* =========================
+   Categories (CRUD via API)
+   ========================= */
+let CATEGORIES_CACHE = [];
+
+async function fetchCategories(){
+  CATEGORIES_CACHE = await api("/api/categories");
+  return CATEGORIES_CACHE;
+}
+async function createCategory(payload){
+  const created = await api("/api/categories", { method:"POST", body: payload });
+  return created;
+}
+async function updateCategory(id, payload){
+  const updated = await api(`/api/categories/${encodeURIComponent(id)}`, { method:"PUT", body: payload });
+  return updated;
+}
+async function deleteCategory(id){
+  await api(`/api/categories/${encodeURIComponent(id)}`, { method:"DELETE" });
+}
+
+function refreshStats(cats){
+  document.getElementById('statTotal').textContent = cats.length;
+}
+
+async function renderCategories(){
+  const container = document.getElementById('catList');
+  container.innerHTML = '';
+  let cats = [];
+  try{
+    cats = await fetchCategories();
+  }catch(err){
+    container.innerHTML = `<p class="muted" style="margin:4px 0">Unable to load categories (${err.message}).</p>`;
+    refreshStats([]);
+    return;
+  }
+
+  const search = (document.getElementById('searchCat').value || '').toLowerCase();
+
+  const filtered = cats.filter(c=>{
+    return !search || (c.name||"").toLowerCase().includes(search) || (c.desc||'').toLowerCase().includes(search);
+  });
+
+  if(!filtered.length){
+    container.innerHTML = '<p class="muted" style="margin:4px 0">No categories found.</p>';
+  } else {
+    filtered.forEach(c=>{
+      const row = document.createElement('div');
+      row.className = 'cat-row';
+      row.innerHTML = `
+        <div>
+          <div class="cat-title">${escapeHTML(c.name||'')}</div>
+          <div class="cat-meta">${escapeHTML(c.desc||'—')}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button type="button" class="btn" data-edit-cat="${c.id}" style="padding:6px 10px">Edit</button>
+          <button type="button" class="btn" data-del-cat="${c.id}"  style="padding:6px 10px;background:#fee2e2;border-color:#fecaca;color:#b91c1c">Delete</button>
+        </div>
+      `;
+      container.appendChild(row);
+      row.querySelector('[data-edit-cat]')?.addEventListener('click', () => openUpdateCategory(c.id));
+      row.querySelector('[data-del-cat]')?.addEventListener('click', () => openDeleteCategory(c.id));
+    });
+  }
+
+  refreshStats(cats);
+}
+
+function escapeHTML(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* =========================
+   Create Category
+   ========================= */
+const createModal = document.getElementById('createModal');
+document.getElementById('openCreate').addEventListener('click', ()=>{
+  document.getElementById('catMsg').style.display='none';
+  document.getElementById('catName').value='';
+  document.getElementById('catDesc').value='';
+  createModal.showModal();
+});
+document.getElementById('catCancel').addEventListener('click', ()=>createModal.close());
+createModal.addEventListener('click', (e)=>{
+  const r = createModal.getBoundingClientRect();
+  const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  if(!inside) createModal.close();
+});
+
+document.getElementById('catSubmit').addEventListener('click', async ()=>{
+  const name = document.getElementById('catName').value.trim();
+  const desc = document.getElementById('catDesc').value.trim();
+  const msg  = document.getElementById('catMsg');
+
+  if(!name){
+    msg.textContent = 'Category name is required.';
+    msg.className = 'msg err';
+    msg.style.display='block';
+    return;
+  }
+
+  try{
+    await createCategory({ name, desc });
+    msg.textContent = 'Category created successfully.';
+    msg.className = 'msg ok';
+    msg.style.display='block';
+    await renderCategories();
+    setTimeout(()=> createModal.close(), 700);
+  }catch(err){
+    msg.textContent = `Failed to create: ${err.message}`;
+    msg.className = 'msg err';
+    msg.style.display='block';
+  }
+});
+
+/* =========================
+   Update Category
+   ========================= */
+function openUpdateCategory(id){
+  const c = (CATEGORIES_CACHE||[]).find(x=> String(x.id) === String(id));
+  const dlg = document.getElementById('updateModal');
+  if (!c || !dlg) return;
+
+  document.getElementById('ucId').value   = c.id;
+  document.getElementById('ucName').value = c.name || '';
+  document.getElementById('ucDesc').value = c.desc || '';
+  document.getElementById('ucMsg').style.display = 'none';
+
+  dlg.showModal();
+}
+
+(function setupUpdateModal(){
+  const dlg = document.getElementById('updateModal');
+  if (!dlg) return;
+
+  dlg.addEventListener('click', (e)=>{
+    const r = dlg.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top  && e.clientY <= r.bottom;
+    if(!inside) dlg.close();
+  });
+
+  document.getElementById('ucCancel').addEventListener('click', ()=> dlg.close());
+
+  document.getElementById('ucSave').addEventListener('click', async ()=>{
+    const id   = document.getElementById('ucId').value;
+    const name = document.getElementById('ucName').value.trim();
+    const desc = document.getElementById('ucDesc').value.trim();
+    const msg  = document.getElementById('ucMsg');
+
+    if(!name){
+      msg.textContent = 'Category name is required.';
+      msg.className = 'msg err';
+      msg.style.display = 'block';
+      return;
+    }
+
+    try{
+      await updateCategory(id, { name, desc });
+      msg.textContent = 'Category updated successfully.';
+      msg.className = 'msg ok';
+      msg.style.display = 'block';
+      await renderCategories();
+      setTimeout(()=> dlg.close(), 700);
+    }catch(err){
+      msg.textContent = `Failed to update: ${err.message}`;
+      msg.className = 'msg err';
+      msg.style.display = 'block';
+    }
+  });
+})();
+
+/* =========================
+   Delete Category
+   ========================= */
+function openDeleteCategory(id){
+  const c = (CATEGORIES_CACHE||[]).find(x=> String(x.id) === String(id));
+  const dlg = document.getElementById('deleteCatModal');
+  if (!dlg) return;
+
+  document.getElementById('dcId').value = id;
+  document.getElementById('dcMsg').style.display = 'none';
+  document.getElementById('deleteCatText').textContent =
+    c ? `Delete "${c.name}"? This action cannot be undone.` : 'Are you sure?';
+
+  dlg.showModal();
+}
+
+(function setupDeleteModal(){
+  const dlg = document.getElementById('deleteCatModal');
+  if (!dlg) return;
+
+  const btnCancel  = document.getElementById('dcCancel');
+  const btnConfirm = document.getElementById('dcConfirm');
+  const msg        = document.getElementById('dcMsg');
+
+  dlg.addEventListener('click', (e)=>{
+    const r = dlg.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                   e.clientY >= r.top  && e.clientY <= r.bottom;
+    if(!inside) dlg.close();
+  });
+  btnCancel.addEventListener('click', ()=> dlg.close());
+
+  btnConfirm.addEventListener('click', async ()=>{
+    const id = document.getElementById('dcId').value;
+    try{
+      await deleteCategory(id);
+      await renderCategories();
+      msg.textContent = 'Category deleted.';
+      msg.className = 'msg ok';
+      msg.style.display = 'block';
+      setTimeout(()=> dlg.close(), 600);
+    }catch(err){
+      msg.textContent = `Failed to delete: ${err.message}`;
+      msg.className = 'msg err';
+      msg.style.display = 'block';
+    }
+  });
+})();
+
+/* =========================
+   Logout
+   ========================= */
+function platformLogout(redirect = '/'){
+  api('/api/logout', { method: 'POST' }).catch(()=>{}).finally(()=> {
+    window.location.href = redirect;
+  });
+}
+(function setupPlatformLogout(){
+  const btn = document.getElementById('logoutBtn');
+  const dlg = document.getElementById('logoutModal');
+  const cancel = document.getElementById('lgCancel');
+  const confirm = document.getElementById('lgConfirm');
+  if(!btn || !dlg) return;
+
+  btn.addEventListener('click', () => dlg.showModal());
+  cancel.addEventListener('click', () => dlg.close());
+  confirm.addEventListener('click', () => platformLogout('/'));
+
+  dlg.addEventListener('click', (e)=>{
+    const r = dlg.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                   e.clientY >= r.top  && e.clientY <= r.bottom;
+    if(!inside) dlg.close();
+  });
+  dlg.addEventListener('close', () => btn.focus());
+})();
+
+/* =========================
+   Repos for Report (API)
+   ========================= */
+const Repos = (function(){
+  const fetchAll = async () => {
+    const [cats, users, reqs, matches, shortlists] = await Promise.allSettled([
+      api('/api/categories'), api('/api/users'), api('/api/requests'),
+      api('/api/matches'), api('/api/shortlists')
+    ]);
+    const get = r => r.status === 'fulfilled' ? r.value || [] : [];
+    return {
+      cats: get(cats), users: get(users), reqs: get(reqs),
+      matches: get(matches), shortlists: get(shortlists)
+    };
+  };
+  return { fetchAll };
+})();
+
+/* =========================
+   Report Controller (no visibility stats)
+   ========================= */
+const GenerateReportController = (function(){
+  const ymd = d => d.toISOString().slice(0,10);
+  const sameDay = (iso, target) => {
+    if(!iso) return false;
+    const d = new Date(iso);
+    return d.getFullYear()===target.getFullYear() &&
+           d.getMonth()===target.getMonth() &&
+           d.getDate()===target.getDate();
+  };
+  const inRange = (iso, from, to) => {
+    if(!iso) return false;
+    const t = new Date(iso).getTime();
+    return t >= from.getTime() && t <= to.getTime();
+  };
+
+    const roleOf = u => String(u.role || '').toLowerCase();
+  const isRole = (u, role) => {
+    const r = roleOf(u);
+    // Treat legacy "user" as "pin"
+    if (role === 'pin') return r === 'pin' || r === 'user';
+    return r === role;
+  };
+  const isActive    = u => String(u.status||'').toLowerCase() === 'active';
+  const isSuspended = u => String(u.status||'').toLowerCase() === 'inactive';
+
+
+
+  async function generateDaily(forDateISO){
+    const day = new Date(forDateISO);
+    const rows = [['Date Option','daily'], ['Date', ymd(day)]];
+
+    const { cats, users, reqs, matches, shortlists } = await Repos.fetchAll();
+
+    rows.push(['—','—'],
+      ['Categories (total)', cats.length],
+      ['Categories Created (today)', cats.filter(c=>sameDay(c.createdAt, day)).length],
+      ['Categories Updated (today)', cats.filter(c=>sameDay(c.updatedAt, day)).length]
+    );
+
+    if(users.length){
+      rows.push(['—','—'],
+        ['Users (total)', users.length],
+        ['Admins', users.filter(u=>u.role==='admin').length],
+        ['CSR Reps', users.filter(u=>u.role==='csr').length],
+        ['PIN Users', users.filter(u => isRole(u,'pin')).length],
+        ['Platform Managers',  users.filter(u => isRole(u,'platform')).length],
+        ['Active Users', users.filter(u=>u.status==='active').length],
+        ['Suspended Users', users.filter(u=>u.status==='inactive').length],
+        ['Users Created (today)', users.filter(u=>sameDay(u.createdAt, day)).length]
+      );
+    }
+
+    if(reqs.length){
+      rows.push(['—','—'],
+        ['Requests (total)', reqs.length],
+        ['Requests Created (today)', reqs.filter(r=>sameDay(r.createdAt||r.date, day)).length],
+        ['Requests Completed (today)', reqs.filter(r=>/complete/i.test(r.status) && sameDay(r.updatedAt||r.date, day)).length],
+        ['Requests Pending (today)', reqs.filter(r=>/pending/i.test(r.status) && sameDay(r.updatedAt||r.date, day)).length]
+      );
+    }
+
+    if(matches.length)   rows.push(['Matches Confirmed (today)', matches.filter(e=>sameDay(e.ts, day)).length]);
+    if(shortlists.length)rows.push(['Shortlists (today)', shortlists.filter(e=>sameDay(e.ts, day)).length]);
+
+    return { dateOption:'daily', forDateISO, rows };
+  }
+
+  async function generateWeekly(fromISO, toISO){
+    const from = new Date(fromISO);
+    const to   = new Date(toISO);
+    if(isNaN(from)||isNaN(to)) throw new Error('Please select a valid start and end date.');
+    const spanDays = Math.floor((to - from)/(24*3600*1000)) + 1;
+    if (spanDays !== 7) throw new Error('Please select a 7-day range for weekly reports.');
+
+    const rows = [['Date Option','weekly'], ['Week', `${ymd(from)} → ${ymd(to)}`]];
+
+    const { cats, users, reqs, matches, shortlists } = await Repos.fetchAll();
+    const inW = iso => inRange(iso, from, to);
+
+    rows.push(['—','—'],
+      ['Categories (total)', cats.length],
+      ['Categories Created (week)', cats.filter(c=>inW(c.createdAt)).length],
+      ['Categories Updated (week)', cats.filter(c=>inW(c.updatedAt)).length]
+    );
+
+    if(users.length){
+      rows.push(['—','—'],
+        ['Users (total)', users.length],
+        ['Admins', users.filter(u=>u.role==='admin').length],
+        ['CSR Reps', users.filter(u=>u.role==='csr').length],
+        ['PIN Users', users.filter(u => isRole(u,'pin')).length],
+        ['Platform Managers',  users.filter(u => isRole(u,'platform')).length],
+        ['Active Users', users.filter(u=>u.status==='active').length],
+        ['Suspended Users', users.filter(u=>u.status==='inactive').length],
+        ['Users Created (week)', users.filter(u=>inW(u.createdAt)).length]
+      );
+    }
+
+    if(reqs.length){
+      rows.push(['—','—'],
+        ['Requests (total)', reqs.length],
+        ['Requests Created (week)', reqs.filter(r=>inW(r.createdAt||r.date)).length],
+        ['Requests Completed (week)', reqs.filter(r=>/complete/i.test(r.status) && inW(r.updatedAt||r.date)).length],
+        ['Requests Pending (week)', reqs.filter(r=>/pending/i.test(r.status) && inW(r.updatedAt||r.date)).length]
+      );
+    }
+
+    if(matches.length)   rows.push(['Matches Confirmed (week)', matches.filter(e=>inW(e.ts)).length]);
+    if(shortlists.length)rows.push(['Shortlists (week)', shortlists.filter(e=>inW(e.ts)).length]);
+
+    return { dateOption:'weekly', range:{from: ymd(from), to: ymd(to)}, rows };
+  }
+
+  async function generateMonthly(monthStr){
+    if(!/^\d{4}-\d{2}$/.test(monthStr)) throw new Error('Please select a valid month.');
+    const [y,m] = monthStr.split('-').map(Number);
+    const from = new Date(y, m-1, 1);
+    const to   = new Date(y, m, 0);
+
+    const rows = [['Date Option','monthly'], ['Month', monthStr]];
+
+    const { cats, users, reqs, matches, shortlists } = await Repos.fetchAll();
+    const inM = iso => inRange(iso, from, to);
+
+    rows.push(['—','—'],
+      ['Categories (total)', cats.length],
+      ['Categories Created (month)', cats.filter(c=>inM(c.createdAt)).length],
+      ['Categories Updated (month)', cats.filter(c=>inM(c.updatedAt)).length]
+    );
+
+    if(users.length){
+      rows.push(['—','—'],
+        ['Users (total)', users.length],
+        ['Admins',        users.filter(u=>u.role==='admin').length],
+        ['CSR Reps',      users.filter(u=>u.role==='csr').length],
+        ['PIN Users',     users.filter(u => isRole(u,'pin')).length],
+        ['Platform Managers',  users.filter(u => isRole(u,'platform')).length],
+        ['Active Users',  users.filter(u=>u.status==='active').length],
+        ['Suspended Users', users.filter(u=>u.status==='inactive').length],
+        ['Users Created (month)', users.filter(u=>inM(u.createdAt)).length]
+      );
+    }
+
+    if(reqs.length){
+      rows.push(['—','—'],
+        ['Requests (total)', reqs.length],
+        ['Requests Created (month)',   reqs.filter(r=>inM(r.createdAt||r.date)).length],
+        ['Requests Completed (month)', reqs.filter(r=>/complete/i.test(r.status) && inM(r.updatedAt||r.date)).length],
+        ['Requests Pending (month)',   reqs.filter(r=>/pending/i.test(r.status) && inM(r.updatedAt||r.date)).length]
+      );
+    }
+
+    if(matches.length)    rows.push(['Matches Confirmed (month)', matches.filter(e=>inM(e.ts)).length]);
+    if(shortlists.length) rows.push(['Shortlists (month)',        shortlists.filter(e=>inM(e.ts)).length]);
+
+    return { dateOption:'monthly', month: monthStr, rows };
+  }
+
+  async function generateReport({ dateOption, forDateISO, fromISO, toISO, monthStr }){
+    return dateOption === 'weekly'
+      ? generateWeekly(fromISO, toISO)
+      : dateOption === 'monthly'
+        ? generateMonthly(monthStr)
+        : generateDaily(forDateISO);
+  }
+  return { generateReport };
+})();
+
+/* =========================
+   Report Boundary wiring
+   ========================= */
+(function GenerateReportPage(){
+  const btnOpen  = document.getElementById('openReport');
+  const dlg      = document.getElementById('reportModal');
+  if(!btnOpen || !dlg) return;
+
+  const selOpt   = document.getElementById('repOption');
+  const grpDaily = document.getElementById('grpDaily');
+  const grpWeekly= document.getElementById('grpWeekly');
+  const repDate  = document.getElementById('repDate');
+  const repFrom  = document.getElementById('repFrom');
+  const repTo    = document.getElementById('repTo');
+
+  const grpMonthly = document.getElementById('grpMonthly');
+  const repMonth   = document.getElementById('repMonth');
+
+  const btnClose = document.getElementById('repCancel');
+  const btnGen   = document.getElementById('repGenerate');
+  const btnCSV   = document.getElementById('repExport');
+  const btnPrint = document.getElementById('repPrint');
+  const msg      = document.getElementById('repMsg');
+  const wrap     = document.getElementById('repTableWrap');
+  const tbody    = document.querySelector('#repTable tbody');
+
+  const ymd = d => d.toISOString().slice(0,10);
+
+  selOpt.addEventListener('change', ()=>{
+    const v = selOpt.value;
+    const weekly = v === 'weekly';
+    const daily  = v === 'daily';
+    const monthly= v === 'monthly';
+    grpDaily.style.display   = daily   ? 'block' : 'none';
+    grpWeekly.style.display  = weekly  ? 'grid'  : 'none';
+    grpMonthly.style.display = monthly ? 'block' : 'none';
+  });
+
+  function renderTable(rows){
+    tbody.innerHTML = '';
+    rows.forEach(([k,v])=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td style="padding:8px;border-bottom:1px solid #e5e7eb">${escapeHTML(k)}</td>
+                      <td style="padding:8px;border-bottom:1px solid #e5e7eb"><b>${escapeHTML(v)}</b></td>`;
+      tbody.appendChild(tr);
+    });
+    wrap.style.display = rows.length ? 'block' : 'none';
+  }
+
+  function rowsToCSV(rows){
+    const esc = s => `"${String(s).replace(/"/g,'""')}"`;
+    return ['Metric,Value'].concat(rows.map(([k,v])=>`${esc(k)},${esc(v)}`)).join('\n');
+  }
+
+  let lastReport = null;
+
+  btnOpen.addEventListener('click', ()=>{
+    selOpt.value = 'weekly';
+    selOpt.dispatchEvent(new Event('change'));
+
+    const today = new Date();
+    repDate.value = ymd(today);
+    const from = new Date(today); from.setDate(today.getDate() - 6);
+    repFrom.value = ymd(from);
+    repTo.value   = ymd(today);
+
+    const m = String(today.getMonth()+1).padStart(2,'0');
+    repMonth.value = `${today.getFullYear()}-${m}`;
+
+    msg.style.display='none';
+    wrap.style.display='none';
+    lastReport=null;
+    dlg.showModal();
+  });
+
+  dlg.addEventListener('click', (e)=>{
+    const r = dlg.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                   e.clientY >= r.top  && e.clientY <= r.bottom;
+    if(!inside) dlg.close();
+  });
+  btnClose.addEventListener('click', ()=> dlg.close());
+
+  btnGen.addEventListener('click', async ()=>{
+    try{
+      const mode = selOpt.value;
+      const payload =
+        mode === 'weekly' ? { dateOption:'weekly', fromISO: repFrom.value, toISO: repTo.value } :
+        mode === 'monthly'? { dateOption:'monthly', monthStr: repMonth.value } :
+                            { dateOption:'daily',  forDateISO: repDate.value };
+
+      const report = await GenerateReportController.generateReport(payload);
+      lastReport = report;
+      renderTable(report.rows);
+      msg.textContent = 'Report generated.';
+      msg.className = 'msg ok';
+      msg.style.display = 'block';
+    }catch(err){
+      lastReport = null;
+      wrap.style.display = 'none';
+      msg.textContent = err.message || 'Failed to generate report.';
+      msg.className = 'msg err';
+      msg.style.display = 'block';
+    }
+  });
+
+  btnCSV.addEventListener('click', ()=>{
+    if (!lastReport){
+      msg.textContent='Generate the report first.';
+      msg.className='msg err';
+      msg.style.display='block';
+      return;
+    }
+    const csv = rowsToCSV(lastReport.rows);
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download =
+      lastReport.dateOption === 'weekly'  ? `weekly-report-${lastReport.range.from}_to_${lastReport.range.to}.csv` :
+      lastReport.dateOption === 'monthly' ? `monthly-report-${lastReport.month}.csv` :
+                                            `daily-report-${lastReport.forDateISO}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  btnPrint.addEventListener('click', ()=>{
+    if (!lastReport){
+      msg.textContent='Generate the report first.';
+      msg.className='msg err';
+      msg.style.display='block';
+      return;
+    }
+    const w = window.open('', 'print');
+    const title =
+      lastReport.dateOption === 'weekly'  ? `Weekly Report ${lastReport.range.from} → ${lastReport.range.to}` :
+      lastReport.dateOption === 'monthly' ? `Monthly Report ${lastReport.month}` :
+                                            `Daily Report ${lastReport.forDateISO}`;
+    w.document.write(`<title>${title}</title>`);
+    w.document.write(document.getElementById('repTable').outerHTML);
+    w.document.close(); w.focus(); w.print(); w.close();
+  });
+})();
+
+/* =========================
+   Init
+   ========================= */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await loadWhoAmI();
+  await renderCategories();
+  document.getElementById('searchCat').addEventListener('input', renderCategories);
+});
+</script>
+</body>
+</html>

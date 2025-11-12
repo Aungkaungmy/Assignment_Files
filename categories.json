@@ -1,0 +1,396 @@
+[
+  {
+    "id": "CAT-001",
+    "name": "Transportation",
+    "desc": "Rides to appointments and errands",
+    "createdAt": "2025-11-11T04:25:00Z",
+    "updatedAt": null
+  },
+  {
+    "id": "CAT-002",
+    "name": "Home Repair",
+    "desc": "Minor household maintenance and repairs",
+    "createdAt": "2025-11-14T03:23:00Z",
+    "updatedAt": "2025-11-15T12:36:00Z"
+  },
+  {
+    "id": "CAT-003",
+    "name": "Home Cleaning",
+    "desc": "Deep cleaning for homes and flats",
+    "createdAt": "2025-11-12T02:15:00Z",
+    "updatedAt": "2025-11-13T06:18:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-004",
+    "name": "Food Deliver",
+    "desc": "Food Deliver services and assistance",
+    "createdAt": "2025-11-09T20:40:00Z",
+    "updatedAt": "2025-11-10T01:16:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-005",
+    "name": "Grocery Run",
+    "desc": "Purchase and deliver groceries",
+    "createdAt": "2025-11-12T01:14:00Z",
+    "updatedAt": "2025-11-12T10:32:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-006",
+    "name": "Medical Escort",
+    "desc": "Accompany to clinic/hospital visits",
+    "createdAt": "2025-11-08T17:07:00Z",
+    "updatedAt": "2025-11-10T05:59:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-007",
+    "name": "Medication Pickup",
+    "desc": "Collect prescriptions from pharmacy",
+    "createdAt": "2025-11-08T03:37:00Z",
+    "updatedAt": "2025-11-08T17:00:00Z"
+  },
+  {
+    "id": "CAT-008",
+    "name": "Pet Care",
+    "desc": "Walk and feed pets",
+    "createdAt": "2025-11-14T22:04:00Z",
+    "updatedAt": "2025-11-16T14:17:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-009",
+    "name": "Childcare",
+    "desc": "Short-term supervision and homework help",
+    "createdAt": "2025-11-16T17:27:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-010",
+    "name": "Elderly Check-in",
+    "desc": "Friendly home visits and wellness checks",
+    "createdAt": "2025-11-15T14:23:00Z",
+    "updatedAt": "2025-11-16T03:07:00Z"
+  },
+  {
+    "id": "CAT-011",
+    "name": "Tutoring",
+    "desc": "Subject coaching and study support",
+    "createdAt": "2025-11-07T18:19:00Z",
+    "updatedAt": "2025-11-08T17:05:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-012",
+    "name": "Admin Paperwork",
+    "desc": "Forms, applications, and documentation help",
+    "createdAt": "2025-11-10T19:04:00Z",
+    "updatedAt": "2025-11-11T22:14:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-013",
+    "name": "Utility Help",
+    "desc": "Set up and manage utility services",
+    "createdAt": "2025-11-08T15:26:00Z",
+    "updatedAt": "2025-11-10T10:30:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-014",
+    "name": "Tech Support",
+    "desc": "Basic troubleshooting for devices",
+    "createdAt": "2025-11-15T10:21:00Z",
+    "updatedAt": null,
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-015",
+    "name": "Appliance Setup",
+    "desc": "Install and set up household appliances",
+    "createdAt": "2025-11-13T18:51:00Z",
+    "updatedAt": "2025-11-14T01:08:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-016",
+    "name": "Furniture Assembly",
+    "desc": "Assemble flat-pack furniture",
+    "createdAt": "2025-11-16T02:03:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-017",
+    "name": "Gardening",
+    "desc": "Light yard work and plant care",
+    "createdAt": "2025-11-16T18:43:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-018",
+    "name": "Pest Control",
+    "desc": "Minor pest treatment and prevention",
+    "createdAt": "2025-11-12T21:22:00Z",
+    "updatedAt": "2025-11-14T03:44:00Z"
+  },
+  {
+    "id": "CAT-019",
+    "name": "Laundry",
+    "desc": "Wash, dry, fold assistance",
+    "createdAt": "2025-11-15T03:31:00Z",
+    "updatedAt": "2025-11-15T22:39:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-020",
+    "name": "Cooking Assistance",
+    "desc": "Cook meals at home",
+    "createdAt": "2025-11-09T12:25:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-021",
+    "name": "Meal Prep",
+    "desc": "Prepare meals for the week",
+    "createdAt": "2025-11-07T05:28:00Z",
+    "updatedAt": "2025-11-08T00:24:00Z"
+  },
+  {
+    "id": "CAT-022",
+    "name": "Waste Disposal",
+    "desc": "Dispose bulky items responsibly",
+    "createdAt": "2025-11-12T17:17:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-023",
+    "name": "Recycling Run",
+    "desc": "Sort and deliver recyclables",
+    "createdAt": "2025-11-16T12:14:00Z",
+    "updatedAt": "2025-11-17T00:23:00Z"
+  },
+  {
+    "id": "CAT-024",
+    "name": "Library Returns",
+    "desc": "Return books and pick up holds",
+    "createdAt": "2025-11-16T07:00:00Z",
+    "updatedAt": "2025-11-17T21:11:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-025",
+    "name": "Parcel Pickup",
+    "desc": "Collect parcels from lockers or post",
+    "createdAt": "2025-11-10T00:09:00Z",
+    "updatedAt": "2025-11-11T00:48:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-026",
+    "name": "Bill Payment",
+    "desc": "Assist with paying bills on time",
+    "createdAt": "2025-11-11T04:44:00Z",
+    "updatedAt": null,
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-027",
+    "name": "Bank Errand",
+    "desc": "Queue and assist at banks",
+    "createdAt": "2025-11-16T21:47:00Z",
+    "updatedAt": "2025-11-18T18:38:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-028",
+    "name": "Hospital Visit",
+    "desc": "Non-emergency hospital escort",
+    "createdAt": "2025-11-12T12:25:00Z",
+    "updatedAt": "2025-11-13T20:05:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-029",
+    "name": "Vaccination Ride",
+    "desc": "Transport to vaccination centres",
+    "createdAt": "2025-11-06T06:04:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-030",
+    "name": "Interpreter Aid",
+    "desc": "Language assistance for appointments",
+    "createdAt": "2025-11-08T03:21:00Z",
+    "updatedAt": "2025-11-08T10:21:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-031",
+    "name": "Wheelchair Assistance",
+    "desc": "Support wheelchair users outdoors",
+    "createdAt": "2025-11-08T17:06:00Z",
+    "updatedAt": null,
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-032",
+    "name": "Ramp Setup",
+    "desc": "Temporary ramp and access setup",
+    "createdAt": "2025-11-06T02:55:00Z",
+    "updatedAt": "2025-11-07T04:04:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-033",
+    "name": "Light Bulb Replace",
+    "desc": "Replace bulbs and test fixtures",
+    "createdAt": "2025-11-10T11:38:00Z",
+    "updatedAt": "2025-11-10T19:45:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-034",
+    "name": "Door Hinge Fix",
+    "desc": "Lubricate and tighten door hinges",
+    "createdAt": "2025-11-13T15:30:00Z",
+    "updatedAt": "2025-11-14T01:36:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-035",
+    "name": "Socket Replace",
+    "desc": "Replace damaged wall sockets",
+    "createdAt": "2025-11-11T23:16:00Z",
+    "updatedAt": "2025-11-13T20:26:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-036",
+    "name": "Wall Repaint",
+    "desc": "Touch-up and repaint walls",
+    "createdAt": "2025-11-06T06:33:00Z",
+    "updatedAt": "2025-11-08T04:07:00Z"
+  },
+  {
+    "id": "CAT-037",
+    "name": "Window Repair",
+    "desc": "Minor window repairs and seals",
+    "createdAt": "2025-11-14T09:41:00Z",
+    "updatedAt": null,
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-038",
+    "name": "Aircon Servicing",
+    "desc": "Clean filters and basic service",
+    "createdAt": "2025-11-10T16:23:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-039",
+    "name": "Filter Replace",
+    "desc": "Replace air/water filters",
+    "createdAt": "2025-11-09T17:34:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-040",
+    "name": "Curtain Install",
+    "desc": "Install or rehang curtains",
+    "createdAt": "2025-11-16T07:39:00Z",
+    "updatedAt": null
+  },
+  {
+    "id": "CAT-041",
+    "name": "Fan Balancing",
+    "desc": "Balance and secure ceiling fans",
+    "createdAt": "2025-11-09T12:47:00Z",
+    "updatedAt": null
+  },
+  {
+    "id": "CAT-042",
+    "name": "WiFi Setup",
+    "desc": "Router and WiFi configuration",
+    "createdAt": "2025-11-14T15:22:00Z",
+    "updatedAt": null
+  },
+  {
+    "id": "CAT-043",
+    "name": "TV Mounting",
+    "desc": "Mount TV on wall safely",
+    "createdAt": "2025-11-10T15:16:00Z",
+    "updatedAt": "2025-11-12T06:38:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-044",
+    "name": "PC Cleanup",
+    "desc": "Clean dust and optimize PC",
+    "createdAt": "2025-11-11T11:05:00Z",
+    "updatedAt": "2025-11-12T02:35:00Z"
+  },
+  {
+    "id": "CAT-045",
+    "name": "Device Update",
+    "desc": "Update phone/PC software",
+    "createdAt": "2025-11-11T06:30:00Z",
+    "updatedAt": "2025-11-12T23:23:00Z"
+  },
+  {
+    "id": "CAT-046",
+    "name": "Water Leakage",
+    "desc": "Identify minor leaks and patch",
+    "createdAt": "2025-11-13T20:22:00Z",
+    "updatedAt": null
+  },
+  {
+    "id": "CAT-048",
+    "name": "Mold Cleanup",
+    "desc": "Clean and prevent mold",
+    "createdAt": "2025-11-13T05:27:00Z",
+    "updatedAt": null,
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-049",
+    "name": "Floor Cleaning",
+    "desc": "Mop, vacuum, polish floors",
+    "createdAt": "2025-11-07T23:25:00Z",
+    "updatedAt": "2025-11-09T23:30:00Z",
+    "visibility": "private"
+  },
+  {
+    "id": "CAT-050",
+    "name": "Kitchen Deep Clean",
+    "desc": "Degrease hobs and counters",
+    "createdAt": "2025-11-08T05:08:00Z",
+    "updatedAt": "2025-11-09T20:05:00Z",
+    "visibility": "public"
+  },
+  {
+    "id": "CAT-051",
+    "name": "Shoppe Pickup",
+    "desc": "Please pick up at Quan Keng",
+    "visibility": "public",
+    "createdAt": "2025-11-12T09:49:39Z",
+    "updatedAt": null
+  },
+  {
+    "id": "CAT-052",
+    "name": "Pickup Order",
+    "desc": "phonee",
+    "visibility": "public",
+    "createdAt": "2025-11-12T16:11:13Z",
+    "updatedAt": null
+  }
+]

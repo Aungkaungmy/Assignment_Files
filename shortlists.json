@@ -1,0 +1,37 @@
+{
+  "lowjian": [
+    "REQ-201",
+    "REQ-202",
+    "REQ-203",
+    "REQ-205",
+    "REQ-127"
+  ],
+  "kyawmin": [
+    "REQ-201",
+    "REQ-202"
+  ],
+  "felix": [
+    "REQ-209",
+    "REQ-210"
+  ],
+  "CSRHan92": [
+    "REQ-201",
+    "REQ-129",
+    "REQ-128",
+    "REQ-130",
+    "REQ-131"
+  ],
+  "CSRRey50": [
+    "REQ-131",
+    "REQ-130",
+    "REQ-129",
+    "REQ-128"
+  ],
+  "CSRMarin45": [
+    "REQ-131",
+    "REQ-130",
+    "REQ-129",
+    "REQ-128",
+    "REQ-201"
+  ]
+}

@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>User Admin Dashboard</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --card:#fff; --ink:#0f172a; --muted:#6b7280; --border:#e5e7eb;
+    --purple:#4f46e5; --radius:18px; --shadow:0 10px 24px rgba(2,6,23,.04),0 2px 6px rgba(2,6,23,.08);
+    --ok:#16a34a; --err:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .wrap{max-width:1120px;margin:auto;padding:22px}
+
+  header{position:sticky;top:0;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:10}
+  header .row{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:14px 22px}
+  .brand{display:flex;gap:10px;align-items:center}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:700}
+  .brand h1{margin:0;font-size:19px}
+  .brand small{display:block;color:var(--muted);font-size:12px}
+  .btn{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:12px;cursor:pointer}
+  .btn:hover{background:#f3f4f6}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat small{color:var(--muted);font-size:12px}
+  .stat .value{font-size:28px;font-weight:800;margin-top:6px}
+  .stat .hint{color:var(--muted);font-size:12px;margin-top:6px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);margin-top:18px;padding:18px}
+  .muted{color:var(--muted)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .search{flex:1;min-width:180px;border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-size:14px}
+  .pillselect{
+    appearance:none;border:1px solid #eef0f4;background:#f5f6f9;
+    padding:8px 12px;border-radius:12px;font-weight:600;color:#111;cursor:pointer;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%2399a1ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+    background-repeat:no-repeat;background-position:right 8px center;padding-right:32px;
+  }
+  .user-list{display:grid;gap:10px}
+  .user-row{
+    background:#fff;border:1px solid #edf0f4;border-radius:14px;
+    padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .user-name{font-weight:700}
+  .user-meta{color:var(--muted);font-size:12px;margin-top:2px}
+  .badge{display:inline-block;font-size:11px;padding:4px 8px;border-radius:999px;font-weight:600}
+  .badge.inactive{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+
+  dialog#createModal::backdrop, dialog#viewModal::backdrop, dialog#updateModal::backdrop,
+  dialog#deleteModal::backdrop, dialog#logoutModal::backdrop{background:rgba(15,23,42,.35)}
+  dialog{border:0;border-radius:18px;padding:0;width:min(460px,92vw)}
+  .modal-body{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px}
+  .modal-body h3{margin:0 0 4px}
+  .field{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+  .field input,.field select{border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:#fff}
+  .view-field{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:6px 9px;min-height:30px}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+  .primary{background:var(--purple);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer}
+  .ghost{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px 14px;cursor:pointer}
+  .msg{font-size:14px;margin-top:10px;display:none}
+  .msg.ok{color:var(--ok)}
+  .msg.err{color:var(--err)}
+
+  .nameRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+  @media (max-width:800px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .user-row{flex-direction:column;align-items:flex-start}
+  }
+  @media (max-width:480px){
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div class="brand">
+      <div class="logo">UA</div>
+      <div>
+        <h1>User Admin Dashboard</h1>
+        <small id="who">Admin</small>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" id="profileBtn" type="button">My Profile</button>
+      <button class="btn" id="logoutBtn" type="button">Logout</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stats">
+    <div class="stat"><small>Total users</small><div class="value" id="totalUsers">0</div><div class="hint">All accounts</div></div>
+    <div class="stat"><small>Active</small><div class="value" id="activeUsers">0</div><div class="hint">Enabled users</div></div>
+    <div class="stat"><small>Admins</small><div class="value" id="adminUsers">0</div><div class="hint">With elevated access</div></div>
+    <div class="stat"><small>Suspended</small><div class="value" id="disabledUsers">0</div><div class="hint">Need attention</div></div>
+  </div>
+
+  <section class="card" aria-label="Users list">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <h2 style="margin:0">Users</h2>
+        <p class="muted" style="margin:4px 0 0">Search, view, update existing user accounts.</p>
+      </div>
+      <button id="openCreate" class="btn" type="button">Create Account</button>
+    </div>
+
+    <div class="toolbar" style="margin-top:14px">
+      <input id="searchUser" class="search" type="text" placeholder="Search by name or email…" />
+      <select id="filterStatus" class="pillselect">
+        <option value="all">All statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Suspended</option>
+      </select>
+      <select id="filterRole" class="pillselect">
+        <option value="all">All roles</option>
+        <option value="admin">Admin</option>
+        <option value="csr">CSR</option>
+        <option value="user">User</option>
+        <option value="platform">Platform Managment</option>
+      </select>
+    </div>
+
+    <div id="userList" class="user-list" style="margin-top:14px"></div>
+  </section>
+</main>
+
+<!-- My Profile (display only) -->
+<dialog id="profileModal" aria-labelledby="profileTitle">
+  <div class="modal-body">
+    <h3 id="profileTitle">My Profile</h3>
+    <p class="muted" style="margin:0 0 6px">Enter your information.</p>
+    <div class="field"><label for="pFullname">Full name</label><input id="pFullname" type="text" placeholder="e.g. Sarah Admin"></div>
+    <div class="field"><label for="pEmail">Email</label><input id="pEmail" type="email" placeholder="you@example.com"></div>
+    <div id="pMsg" class="msg"></div>
+    <div class="actions"><button type="button" class="ghost" id="pCancel">Cancel</button><button type="button" class="primary" id="pSave">Save</button></div>
+  </div>
+</dialog>
+
+<!-- Create -->
+<dialog id="createModal" aria-labelledby="createTitle">
+  <div class="modal-body">
+    <h3 id="createTitle">Create User Account</h3>
+    <p class="muted" style="margin:0 0 6px">Enter the required user details.</p>
+    <div class="field"><label for="cuName">Full name</label><input id="cuName" type="text" placeholder="e.g. Alex Lee"></div>
+    <div class="field"><label for="cuEmail">Email</label><input id="cuEmail" type="email" placeholder="alex@example.com"></div>
+    <div class="field"><label for="cuUsername">Username</label><input id="cuUsername" type="text" placeholder="alex"></div>
+    <div class="field" style="position:relative;"><label for="cuPassword">Password</label><input id="cuPassword" type="password" placeholder="•••••••" style="padding-right:74px;"><button type="button" id="cuPwToggle" style="position:absolute;right:6px;bottom:6px;border:1px solid #e2e8f0;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">Show</button></div>
+    <div class="field"><label for="cuRole">Role</label><select id="cuRole"><option value="">Select…</option><option value="admin">Admin</option><option value="csr">CSR</option><option value="user">User</option><option value="platform">Platform</option></select></div>
+    <div class="field"><label for="cuStatus">Status</label><select id="cuStatus"><option value="active">Active</option><option value="inactive">Suspended</option></select></div>
+    <div id="cuMsg" class="msg"></div>
+    <div class="actions"><button type="button" class="ghost" id="cuCancel">Cancel</button><button type="button" class="primary" id="cuSubmit">Create</button></div>
+  </div>
+</dialog>
+
+<!-- Update -->
+<dialog id="updateModal" aria-labelledby="updateTitle">
+  <div class="modal-body">
+    <h3 id="updateTitle">Update User Account</h3>
+    <p class="muted" style="margin:0 0 6px">Edit the details and save.</p>
+    <input id="uuId" type="hidden">
+    <div class="field"><label for="uuName">Full name</label><input id="uuName" type="text"></div>
+    <div class="field"><label for="uuEmail">Email</label><input id="uuEmail" type="email"></div>
+    <div class="field"><label for="uuUsername">Username</label><input id="uuUsername" type="text"></div>
+    <div class="field" style="position:relative;"><label for="uuPassword">Password</label><input id="uuPassword" type="password" style="padding-right:74px;"><button type="button" id="uuPwToggle" style="position:absolute;right:6px;bottom:6px;border:1px solid #e2e8f0;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">Show</button></div>
+    <div class="field"><label for="uuRole">Role</label><select id="uuRole"><option value="admin">Admin</option><option value="csr">CSR</option><option value="user">User</option></select></div>
+    <div class="field"><label for="uuStatus">Status</label><select id="uuStatus"><option value="active">Active</option><option value="inactive">Suspended</option></select></div>
+    <div id="uuMsg" class="msg"></div>
+    <div class="actions"><button type="button" class="ghost" id="uuCancel">Cancel</button><button type="button" class="primary" id="uuSave">Update</button></div>
+  </div>
+</dialog>
+
+<!-- View -->
+<dialog id="viewModal" aria-labelledby="viewTitle">
+  <div class="modal-body">
+    <h3 id="viewTitle">User Details</h3>
+    <p class="muted" style="margin:0 0 6px">View account information.</p>
+    <div class="field"><label>Name</label><div id="vName" class="view-field">—</div></div>
+    <div class="field"><label>Email</label><div id="vEmail" class="view-field">—</div></div>
+    <div class="field"><label>Username</label><div id="vUsername" class="view-field">—</div></div>
+    <div class="field"><label>Role</label><div id="vRole" class="view-field">—</div></div>
+    <div class="field"><label>Status</label><div id="vStatus" class="view-field">—</div></div>
+    <div class="field"><label>Created</label><div id="vCreated" class="view-field">—</div></div>
+    <div class="field" style="position:relative;"><label>Password</label><input id="vPassword" type="password" readonly style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:6px 68px 6px 9px;background:#f8fafc"><button type="button" id="vPwToggle" style="position:absolute;right:6px;bottom:6px;border:1px solid #e2e8f0;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">Show</button></div>
+    <div class="actions" style="margin-top:12px"><button type="button" class="ghost" id="vClose">Close</button></div>
+  </div>
+</dialog>
+
+<!-- Suspend / Activate -->
+<dialog id="deleteModal" aria-labelledby="deleteTitle">
+  <div class="modal-body">
+    <h3 id="deleteTitle">Suspend User?</h3>
+    <p class="muted" id="deleteText" style="margin:0 0 8px">Are you sure?</p>
+    <input type="hidden" id="delId">
+    <div id="delMsg" class="msg"></div>
+    <div class="actions"><button type="button" class="ghost" id="delCancel">Cancel</button><button type="button" class="danger" id="delConfirm">Suspend</button></div>
+  </div>
+</dialog>
+
+<!-- Logout -->
+<dialog id="logoutModal" aria-labelledby="logoutTitle">
+  <div class="lg-card">
+    <h3 id="logoutTitle">Log out?</h3>
+    <p class="lg-text">You’ll be returned to the Sign in page.</p>
+    <div class="lg-actions"><button type="button" class="lg-btn ghost" id="lgCancel">Cancel</button><button type="button" class="lg-btn danger" id="lgConfirm">Log out</button></div>
+  </div>
+</dialog>
+
+<script>
+  // ---------------- Helpers ----------------
+  const state = { users: [] };
+
+  const toServerRole = r => (r === 'user' ? 'pin' : r);
+  const fromServerRole = r => (r === 'pin' ? 'user' : r);
+
+  const toServerStatus = s => (s === 'active' ? 'Active' : s === 'inactive' ? 'Suspended' : s);
+  const fromServerStatus = s => (s === 'Active' ? 'active' : s === 'Suspended' ? 'inactive' : s);
+
+  async function fetchJSON(url, options){
+    const res = await fetch(url, options || {});
+    if (!res.ok) throw new Error(`${options?.method || 'GET'} ${url} failed`);
+    const ct = res.headers.get('content-type') || '';
+    return ct.includes('application/json') ? res.json() : null;
+  }
+
+  // ---------------- API wrappers ----------------
+  async function apiList(q=""){
+    const url = '/api/users' + (q ? ('?q=' + encodeURIComponent(q)) : '');
+    return await fetchJSON(url);
+  }
+  async function apiGet(id){
+    return await fetchJSON(`/api/users/${id}`);
+  }
+  async function apiUpdate(id, payload){
+    return await fetchJSON(`/api/users/${id}`, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+  }
+  async function apiSetStatus(id, action){ // 'suspend' | 'activate'
+    return await fetchJSON(`/api/users/${id}/status`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action })
+    });
+  }
+
+  // ---------------- Read & render ----------------
+  async function loadUsersFromServer(){
+    const list = await apiList(document.getElementById('searchUser').value.trim());
+    state.users = (list || []).map(u => ({
+      id: Number(u.id),                       // force numeric
+      uid: u.uid,
+      name: u.fullName || u.username || '',
+      email: u.email || '',
+      username: u.username || '',
+      role: fromServerRole((u.role || '').toLowerCase()),
+      status: fromServerStatus(u.status || 'Active'),
+      createdAt: u.createdAt || null
+    }));
+  }
+
+  function refreshStats(all){
+    document.getElementById('totalUsers').textContent    = all.length;
+    document.getElementById('activeUsers').textContent   = all.filter(u=>u.status==='active').length;
+    document.getElementById('adminUsers').textContent    = all.filter(u=>u.role==='admin').length;
+    document.getElementById('disabledUsers').textContent = all.filter(u=>u.status==='inactive').length;
+  }
+
+  async function renderUsers(){
+    const container = document.getElementById('userList');
+    container.innerHTML = '<p class="muted">Loading…</p>';
+    try{
+      await loadUsersFromServer();
+      const all = state.users.slice();
+
+      const fStatus = document.getElementById('filterStatus').value; // all/active/inactive
+      const fRole   = document.getElementById('filterRole').value;   // all/admin/csr/user
+
+      const filtered = all.filter(u=>{
+        const okStatus = (fStatus === 'all') || (u.status === fStatus);
+        const okRole   = (fRole === 'all') || (u.role === fRole);
+        return okStatus && okRole;
+      });
+
+      refreshStats(all);
+      if (!filtered.length){
+        container.innerHTML = '<p class="muted" style="margin:5px 0">No users found.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      filtered.forEach(u=>{
+        const row = document.createElement('div');
+        row.className = 'user-row';
+        row.innerHTML = `
+          <div>
+            <div class="nameRow">
+              <div class="user-name">${u.name}</div>
+              ${u.status === 'inactive' ? '<span class="badge inactive">Suspended</span>' : ''}
+            </div>
+            <div class="user-meta">${u.email} • ${u.role} • ${u.uid || ('U-' + String(u.id).padStart(3,'0'))}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button type="button" class="btn" data-view="${u.id}"  style="padding:4px 10px;font-size:13px">View</button>
+            <button type="button" class="btn" data-edit="${u.id}"  style="padding:4px 10px;font-size:13px;background:#4f46e5;color:#fff;border-color:#4f46e5">Update</button>
+            <button type="button" class="btn" data-sus="${u.id}"
+              style="padding:4px 10px;font-size:13px; ${u.status==='active'
+                  ? 'background:#fee2e2;border-color:#fecaca;color:#b91c1c'
+                  : 'background:#dcfce7;border-color:#bbf7d0;color:#166534'}">
+              ${u.status==='active' ? 'Suspend' : 'Activate'}
+            </button>
+          </div>`;
+        container.appendChild(row);
+      });
+
+      // actions
+      container.querySelectorAll('[data-view]').forEach(btn=>{
+        btn.onclick = () => openViewUser(Number(btn.getAttribute('data-view')));
+      });
+      container.querySelectorAll('[data-edit]').forEach(btn=>{
+        btn.onclick = () => openUpdateUser(Number(btn.getAttribute('data-edit')));
+      });
+      container.querySelectorAll('[data-sus]').forEach(btn=>{
+        btn.onclick = () => openSuspendUser(Number(btn.getAttribute('data-sus')));
+      });
+    }catch(e){
+      container.innerHTML = '<p class="muted">Failed to load users.</p>';
+      console.error(e);
+    }
+  }
+
+  // ---------------- Create ----------------
+  (function(){
+    const createModal = document.getElementById('createModal');
+    document.getElementById('openCreate').addEventListener('click', ()=>{
+      document.getElementById('cuMsg').style.display='none';
+      createModal.showModal();
+    });
+    document.getElementById('cuCancel').addEventListener('click', ()=>createModal.close());
+    document.getElementById('cuPwToggle').addEventListener('click', ()=>{
+      const pw = document.getElementById('cuPassword');
+      const hidden = pw.type === 'password';
+      pw.type = hidden ? 'text' : 'password';
+      document.getElementById('cuPwToggle').textContent = hidden ? 'Hide' : 'Show';
+    });
+
+    document.getElementById('cuSubmit').addEventListener('click', async ()=>{
+      const fullName = document.getElementById('cuName').value.trim();
+      const email    = document.getElementById('cuEmail').value.trim();
+      const username = document.getElementById('cuUsername').value.trim();
+      const password = document.getElementById('cuPassword').value.trim();
+      const roleUI   = document.getElementById('cuRole').value;    // admin|csr|user
+      const statusUI = document.getElementById('cuStatus').value;  // active|inactive
+      const msg = document.getElementById('cuMsg');
+
+      if(!username || !password || !email){
+        msg.textContent = 'Please check your input';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+        return;
+      }
+
+      const body = new URLSearchParams({
+        fullName: fullName || username,
+        email,
+        username,
+        password,
+        role: toServerRole(roleUI),
+        status: toServerStatus(statusUI)
+      });
+
+      try{
+        const res = await fetch('/admin/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString()
+        });
+        if (!(res.ok || (res.status >= 300 && res.status < 400))) throw new Error();
+
+        msg.textContent = 'Account created successfully';
+        msg.className = 'msg ok';
+        msg.style.display = 'block';
+
+        await renderUsers();
+        setTimeout(()=>createModal.close(), 900);
+      }catch(e){
+        msg.textContent = 'Server error creating user.';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+      }
+    });
+  })();
+
+  // ---------------- View ----------------
+  async function openViewUser(id){
+    try{
+      const u = await apiGet(id);
+      const dlg = document.getElementById('viewModal');
+      document.getElementById('vName').textContent     = u.fullName || u.username || '—';
+      document.getElementById('vEmail').textContent    = u.email || '—';
+      document.getElementById('vUsername').textContent = u.username || '—';
+      document.getElementById('vRole').textContent     = fromServerRole((u.role||'').toLowerCase()) || '—';
+      document.getElementById('vStatus').textContent   = fromServerStatus(u.status || 'Active') || '—';
+      document.getElementById('vCreated').textContent  = u.createdAt || '—';
+      document.getElementById('vPassword').value       = ''; // never show server hash
+      dlg.showModal();
+    }catch(e){
+      alert('Failed to load user');
+    }
+  }
+  (function(){
+    const dlg = document.getElementById('viewModal');
+    document.getElementById('vClose').addEventListener('click', ()=> dlg.close());
+    document.getElementById('vPwToggle').addEventListener('click', ()=>{
+      const pw = document.getElementById('vPassword');
+      const hidden = pw.type === 'password';
+      pw.type = hidden ? 'text' : 'password';
+      document.getElementById('vPwToggle').textContent = hidden ? 'Hide' : 'Show';
+    });
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+  })();
+
+  // ---------------- Update ----------------
+  function openUpdateUser(id){
+    const u = state.users.find(x => x.id === Number(id));
+    const dlg = document.getElementById('updateModal');
+    if (!u || !dlg) return;
+
+    document.getElementById('uuId').value       = u.id;
+    document.getElementById('uuName').value     = u.name || '';
+    document.getElementById('uuEmail').value    = u.email || '';
+    document.getElementById('uuUsername').value = u.username || '';
+    document.getElementById('uuPassword').value = '';
+    document.getElementById('uuRole').value     = u.role || 'user';
+    document.getElementById('uuStatus').value   = u.status || 'active';
+    document.getElementById('uuMsg').style.display='none';
+
+    dlg.showModal();
+  }
+  (function(){
+    const dlg = document.getElementById('updateModal');
+    document.getElementById('uuPwToggle').addEventListener('click', ()=>{
+      const pw = document.getElementById('uuPassword');
+      const hidden = pw.type === 'password';
+      pw.type = hidden ? 'text' : 'password';
+      document.getElementById('uuPwToggle').textContent = hidden ? 'Hide' : 'Show';
+    });
+    document.getElementById('uuCancel').addEventListener('click', ()=> dlg.close());
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+
+    document.getElementById('uuSave').addEventListener('click', async ()=>{
+      const id        = Number(document.getElementById('uuId').value);
+      const name      = document.getElementById('uuName').value.trim();
+      const email     = document.getElementById('uuEmail').value.trim();
+      const username  = document.getElementById('uuUsername').value.trim();
+      const newPwRaw  = document.getElementById('uuPassword').value;
+      const roleUI    = document.getElementById('uuRole').value;
+      const statusUI  = document.getElementById('uuStatus').value;
+      const msg       = document.getElementById('uuMsg');
+
+      if (!id || !email || !username){
+        msg.textContent = 'Please check your input';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+        return;
+      }
+
+      const payload = {
+        fullName: name || username,
+        email,
+        username,
+        role: toServerRole(roleUI),
+        status: toServerStatus(statusUI)
+      };
+      if (newPwRaw && newPwRaw.trim()) payload.password = newPwRaw.trim();
+
+      try{
+        await apiUpdate(id, payload);
+        msg.textContent = 'Update was successful';
+        msg.className = 'msg ok';
+        msg.style.display = 'block';
+        await renderUsers();
+        setTimeout(()=> dlg.close(), 900);
+      }catch(e){
+        msg.textContent = 'Server error updating user';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+      }
+    });
+  })();
+
+  // ---------------- Suspend / Activate ----------------
+  function openSuspendUser(id){
+    const u = state.users.find(x => x.id === Number(id));
+    const dlg = document.getElementById('deleteModal');
+    if (!u || !dlg) return;
+
+    const isActive = u.status === 'active';
+    document.getElementById('delId').value = String(id);
+    document.getElementById('deleteTitle').textContent = isActive ? 'Suspend User?' : 'Activate User?';
+    document.getElementById('deleteText').textContent =
+      isActive ? `Suspend "${u.name}"? They will be unable to sign in.` : `Activate "${u.name}"? They will regain access.`;
+    const confirmBtn = document.getElementById('delConfirm');
+    confirmBtn.textContent = isActive ? 'Suspend' : 'Activate';
+    confirmBtn.className = isActive ? 'danger' : 'primary';
+    confirmBtn.dataset.action = isActive ? 'suspend' : 'activate';
+
+    document.getElementById('delMsg').style.display = 'none';
+    dlg.showModal();
+  }
+  (function(){
+    const dlg = document.getElementById('deleteModal');
+    const btnCancel = document.getElementById('delCancel');
+    const btnConfirm = document.getElementById('delConfirm');
+    const msg = document.getElementById('delMsg');
+
+    btnCancel.addEventListener('click', ()=> dlg.close());
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+
+    btnConfirm.addEventListener('click', async ()=>{
+      const id = Number(document.getElementById('delId').value);
+      const action = btnConfirm.dataset.action || 'suspend';
+      try{
+        await apiSetStatus(id, action);
+        msg.textContent = action === 'suspend' ? 'User suspended.' : 'User activated.';
+        msg.className = 'msg ok';
+        msg.style.display = 'block';
+        await renderUsers();
+        setTimeout(()=> dlg.close(), 700);
+      }catch(e){
+        msg.textContent = 'Server error.';
+        msg.className = 'msg err';
+        msg.style.display = 'block';
+      }
+    });
+  })();
+
+  // ---------------- Profile & Logout ----------------
+  (function(){
+    const btn = document.getElementById('profileBtn');
+    const dlg = document.getElementById('profileModal');
+    const cancel = document.getElementById('pCancel');
+    const save = document.getElementById('pSave');
+    const msg  = document.getElementById('pMsg');
+
+    btn.addEventListener('click', ()=> { msg.style.display='none'; dlg.showModal(); });
+    cancel.addEventListener('click', ()=> dlg.close());
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                     e.clientY >= r.top  && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+    save.addEventListener('click', ()=>{
+      const fullname = document.getElementById('pFullname').value.trim();
+      const email    = document.getElementById('pEmail').value.trim();
+      if (!fullname || !email){
+        msg.textContent = 'Please fill in at least name and email.';
+        msg.className = 'msg err'; msg.style.display = 'block'; return;
+      }
+      document.getElementById('who').textContent = `Logged in as ${fullname}`;
+      msg.textContent = 'Saved.';
+      msg.className = 'msg ok'; msg.style.display = 'block';
+      setTimeout(()=> dlg.close(), 700);
+    });
+  })();
+
+  (function setupLogout(){
+    const btn = document.getElementById('logoutBtn');
+    const dlg = document.getElementById('logoutModal');
+    document.getElementById('lgCancel').addEventListener('click', () => dlg.close());
+    document.getElementById('lgConfirm').addEventListener('click', () => { window.location.href = '/'; });
+    btn.addEventListener('click', () => dlg.showModal());
+    dlg.addEventListener('click', (e)=>{
+      const r = dlg.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                     e.clientY >= r.top  && e.clientY <= r.bottom;
+      if(!inside) dlg.close();
+    });
+  })();
+
+  // ---------------- Init ----------------
+  document.getElementById('searchUser').addEventListener('input', renderUsers);
+  document.getElementById('filterStatus').addEventListener('change', renderUsers);
+  document.getElementById('filterRole').addEventListener('change', renderUsers);
+  document.addEventListener('DOMContentLoaded', renderUsers);
+</script>
+</body>
+</html>
